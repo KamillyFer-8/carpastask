@@ -3,6 +3,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   agendaRange,
+  calendarDate,
   cursorSchema,
   PAGE_SIZE,
   taskFields,
@@ -25,6 +26,9 @@ const t = initTRPC.context<{ repository: TaskRepository }>().create({
 });
 export const appRouter = t.router({
   task: t.router({
+    reminders: t.procedure
+      .input(z.object({ hoje: calendarDate }))
+      .query(({ ctx, input }) => ctx.repository.reminders(input.hoje)),
     agenda: t.procedure
       .input(agendaRange)
       .query(({ ctx, input }) =>

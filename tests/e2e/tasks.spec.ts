@@ -29,10 +29,11 @@ test("CRUD through dedicated pages, validation, cancellation and deletion dialog
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(
-    page.getByText("Sua primeira tarefa começa aqui."),
-  ).toBeVisible();
+  await expect(page.getByText("Nenhuma tarefa.")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await expect(page.locator("body")).not.toContainText(
+    "SEU PLANEJAMENTO, EM UM SÓ LUGAR",
+  );
   await page.getByRole("link", { name: "Nova tarefa", exact: true }).click();
   await expect(page).toHaveURL(/\/tarefas\/nova$/);
   await page.getByRole("button", { name: "Salvar tarefa" }).click();
@@ -90,15 +91,11 @@ test("CRUD through dedicated pages, validation, cancellation and deletion dialog
   await page
     .getByRole("button", { name: "Excluir tarefa", exact: true })
     .click();
-  await expect(
-    page.getByText("Sua primeira tarefa começa aqui."),
-  ).toBeVisible();
+  await expect(page.getByText("Nenhuma tarefa.")).toBeVisible();
   await page.getByRole("link", { name: "Nova tarefa", exact: true }).click();
   await page.getByLabel("Título (obrigatório)").fill("Não salvar");
   await page.getByRole("button", { name: "Cancelar" }).click();
-  await expect(
-    page.getByText("Sua primeira tarefa começa aqui."),
-  ).toBeVisible();
+  await expect(page.getByText("Nenhuma tarefa.")).toBeVisible();
   expect(errors).toEqual([]);
 });
 test("production SSR contains task headings before JavaScript", async ({
@@ -120,6 +117,9 @@ test("production SSR contains task headings before JavaScript", async ({
   await page.goto("http://127.0.0.1:3000");
   await expect(page.getByRole("heading", { name: task.titulo })).toBeVisible();
   await expect(page.locator(".agenda-task")).toContainText(task.titulo);
+  await expect(page.locator(".reminder-group.proximas")).toContainText(
+    task.titulo,
+  );
   await page.goto(`http://127.0.0.1:3000/tarefas/${task.id}/editar`);
   await expect(page.getByLabel("Título (obrigatório)")).toHaveValue(
     task.titulo,
@@ -229,6 +229,11 @@ test("responsive layouts, local rounded font and actual screenshots", async ({
     dataAgendada: weekStart(todayInBrazil()),
     horario: "09:00",
   });
+  await api().task.create.mutate({
+    titulo: "Revisar proposta",
+    descricao: "Conferir o documento antes de enviar.",
+    dataAgendada: addDays(todayInBrazil(), -1),
+  });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
   expect(
@@ -318,4 +323,40 @@ test("schedules from the calendar, navigates weeks, reschedules and clears dates
     .getByRole("button", { name: "Excluir tarefa", exact: true })
     .click();
   await expect(page.locator(".agenda-task")).toHaveCount(0);
+});
+test("reminders show scheduled tasks beyond the first card page and refresh after edits", async ({
+  page,
+}) => {
+  await api().task.create.mutate({
+    titulo: "Revisar proposta",
+    dataAgendada: addDays(todayInBrazil(), -1),
+  });
+  await api().task.create.mutate({
+    titulo: "Enviar documento",
+    dataAgendada: addDays(todayInBrazil(), 1),
+    horario: "10:00",
+  });
+  for (let index = 0; index < 12; index++)
+    await api().task.create.mutate({ titulo: `Anotação ${index}` });
+  await page.goto("/");
+  await expect(page.locator(".task-card")).toHaveCount(10);
+  await expect(
+    page.locator(".task-card").filter({ hasText: "Enviar documento" }),
+  ).toHaveCount(0);
+  await expect(page.locator(".reminder-group.atrasadas")).toContainText(
+    "Revisar proposta",
+  );
+  await expect(page.locator(".reminder-group.proximas")).toContainText(
+    "Enviar documento",
+  );
+  await page
+    .locator(".reminder-group.proximas")
+    .getByRole("link", { name: /Enviar documento/ })
+    .click();
+  await expect(page).toHaveURL(/\/tarefas\/.+\/editar$/);
+  await page.getByRole("button", { name: "Remover data e horário" }).click();
+  await page.getByRole("button", { name: "Salvar tarefa" }).click();
+  await expect(page.locator(".reminder-group.proximas")).toContainText(
+    "Nenhuma tarefa para os próximos 7 dias.",
+  );
 });

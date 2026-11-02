@@ -48,7 +48,7 @@ export function TaskForm({
   return (
     <form onSubmit={submit} noValidate>
       <p className="form-intro">
-        Só o título é obrigatório. Os outros detalhes ficam por sua conta.
+        Título obrigatório. Descrição, data e horário opcionais.
       </p>
       <label htmlFor="title">
         Título <span className="muted">(obrigatório)</span>
@@ -79,7 +79,7 @@ export function TaskForm({
         onChange={(e) => setDescricao(e.target.value)}
         maxLength={2000}
         rows={5}
-        placeholder="Inclua os detalhes que ajudam a dar o próximo passo…"
+        placeholder="Detalhes da tarefa"
         disabled={pending}
         aria-invalid={!!errors.descricao}
         aria-describedby={errors.descricao ? "description-error" : undefined}

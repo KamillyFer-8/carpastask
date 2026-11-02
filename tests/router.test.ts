@@ -10,6 +10,43 @@ describe("task router and isolated repository", () => {
     caller = appRouter.createCaller({ repository });
   });
   afterEach(() => vi.useRealTimers());
+  it("builds reminders from the complete store, caps previews and updates after date changes", async () => {
+    const overdue = await caller.task.create({
+      titulo: "Revisar proposta",
+      dataAgendada: "2026-11-01",
+    });
+    const upcoming = await caller.task.create({
+      titulo: "Enviar documento",
+      dataAgendada: "2026-11-03",
+    });
+    for (let index = 0; index < 24; index++)
+      await caller.task.create({
+        titulo: `Próxima ${index}`,
+        dataAgendada: "2026-11-04",
+      });
+    await caller.task.create({
+      titulo: "Fora do período",
+      dataAgendada: "2026-11-09",
+    });
+    await caller.task.create({ titulo: "Sem data" });
+    const reminders = await caller.task.reminders({ hoje: "2026-11-02" });
+    expect(reminders.atrasadas).toMatchObject({ total: 1, items: [overdue] });
+    expect(reminders.proximas.total).toBe(25);
+    expect(reminders.proximas.items).toHaveLength(3);
+    expect(reminders.proximas.items[0].id).toBe(upcoming.id);
+    reminders.proximas.items[0].titulo = "External";
+    expect((await caller.task.get({ id: upcoming.id })).titulo).toBe(
+      "Enviar documento",
+    );
+    await caller.task.update({ id: upcoming.id, titulo: upcoming.titulo });
+    await caller.task.delete({ id: overdue.id });
+    const refreshed = await caller.task.reminders({ hoje: "2026-11-02" });
+    expect(refreshed.atrasadas.total).toBe(0);
+    expect(refreshed.proximas.total).toBe(24);
+    await expect(
+      caller.task.reminders({ hoje: "invalid" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
   it("creates, reschedules and clears a date without altering creation metadata", async () => {
     const task = await caller.task.create({
       titulo: "Entrevista",

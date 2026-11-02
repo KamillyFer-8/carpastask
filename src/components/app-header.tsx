@@ -15,7 +15,7 @@ export function AppHeader() {
         </Link>
         <span className="header-note">
           <span className="tiny-dot" />
-          Seu dia, no seu ritmo.
+          Tarefas / calendário
         </span>
       </div>
     </header>

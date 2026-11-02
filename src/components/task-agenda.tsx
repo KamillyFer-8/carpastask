@@ -29,8 +29,10 @@ export function TaskAgenda({
     >
       <div className="agenda-toolbar">
         <div>
-          <p className="eyebrow">SEUS PRÓXIMOS COMPROMISSOS</p>
-          <h2 id="agenda-heading">Agenda da semana</h2>
+          <span className="section-number" aria-hidden="true">
+            01
+          </span>
+          <h2 id="agenda-heading">Calendário</h2>
           <p className="section-description">
             {formatDay(inicio)} a{" "}
             {formatDay(fim, { day: "numeric", month: "long", year: "numeric" })}
@@ -135,7 +137,9 @@ export function TaskAgenda({
                       </Link>
                     ))}
                     {!tasks.length && (
-                      <span className="day-empty">Sem tarefas</span>
+                      <span className="day-empty">
+                        {agenda.isPending ? "Carregando…" : "—"}
+                      </span>
                     )}
                   </div>
                   <Link
@@ -152,7 +156,7 @@ export function TaskAgenda({
           </div>
           {!agenda.isFetching && !agenda.data?.length && (
             <p className="agenda-empty-hint">
-              Sua semana está livre. Escolha um dia para agendar uma tarefa.
+              Nenhuma tarefa nesta semana. Use + para adicionar.
             </p>
           )}
         </>

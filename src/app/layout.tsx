@@ -4,8 +4,9 @@ import { AppHeader } from "@/components/app-header";
 import "@fontsource-variable/nunito/wght.css";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "CarpasTask — Menos ruído. Mais clareza.",
-  description: "Um lugar tranquilo para organizar suas tarefas, no seu ritmo.",
+  title: "CarpasTask — Tarefas e calendário",
+  description:
+    "Crie tarefas, marque datas e acompanhe os próximos compromissos.",
 };
 export default function Layout({
   children,

@@ -64,3 +64,7 @@ export type Task = {
 export type Cursor = z.infer<typeof cursorSchema>;
 export type TaskPage = { items: Task[]; nextCursor: Cursor | null };
 export const PAGE_SIZE = 10;
+export type TaskReminders = {
+  atrasadas: { total: number; items: Task[] };
+  proximas: { total: number; items: Task[] };
+};

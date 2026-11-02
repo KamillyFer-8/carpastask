@@ -12,15 +12,17 @@ export default async function Page({
   const today = todayInBrazil();
   const inicio = weekStart(today);
   const caller = appRouter.createCaller(createContext());
-  const [initialPage, initialAgenda] = await Promise.all([
+  const [initialPage, initialAgenda, initialReminders] = await Promise.all([
     caller.task.list({ limit: PAGE_SIZE }),
     caller.task.agenda({ inicio, fim: addDays(inicio, 6) }),
+    caller.task.reminders({ hoje: today }),
   ]);
   const { sucesso } = await searchParams;
   return (
     <TaskWorkspace
       initialPage={initialPage}
       initialAgenda={initialAgenda}
+      initialReminders={initialReminders}
       today={today}
       success={sucesso}
     />

@@ -19,6 +19,7 @@ export function TaskEditor({
     await Promise.all([
       utils.task.list.invalidate(),
       utils.task.agenda.invalidate(),
+      utils.task.reminders.invalidate(),
     ]);
     router.push(`/?sucesso=${task ? "atualizada" : "criada"}`);
     router.refresh();
@@ -40,8 +41,7 @@ export function TaskEditor({
         </Link>
       )}
       <div className="editor-heading">
-        <p className="eyebrow">ORGANIZE SEU DIA</p>
-        <h1>{task ? "Editar tarefa" : "O que você precisa fazer?"}</h1>
+        <h1>{task ? "Editar tarefa" : "Nova tarefa"}</h1>
         <p>
           {task
             ? "Atualize os detalhes ou escolha uma nova data."
@@ -59,7 +59,7 @@ export function TaskEditor({
             </span>
             <div>
               <h2>{task ? "Detalhes da tarefa" : "Nova tarefa"}</h2>
-              <p>O essencial para começar.</p>
+              <p>Título, descrição e agendamento.</p>
             </div>
           </div>
           <TaskForm
@@ -81,12 +81,12 @@ export function TaskEditor({
         </section>
         <aside className="editor-tip">
           <Leaf size={22} />
-          <h2>Tem dia marcado?</h2>
+          <h2>Data e horário</h2>
           <p>
             Use a data para entrevistas, reuniões ou entregas. O horário é
             opcional; sem ele, a tarefa aparece como “Dia todo”.
           </p>
-          <span>Menos ruído. Mais clareza.</span>
+          <span>Os campos de data e horário são opcionais.</span>
         </aside>
       </div>
     </main>

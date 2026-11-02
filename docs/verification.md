@@ -4,7 +4,7 @@ Verified locally on November 2, 2026, on Windows with Node.js 24.18.0 and npm 11
 
 ## Implemented result
 
-CarpasTask provides typed tRPC CRUD, server-generated UUIDs and UTC timestamps, Zod validation, exclusively in-memory storage, real dynamic SSR, hydrated query data, cursor-based infinite scrolling, dedicated creation/edit pages, destructive confirmation, accessible feedback, responsive card layouts and a local SVG logo. Optional civil date/time fields support a weekly agenda with navigation and date selection. The four original fields and required stack are preserved. The interface is Brazilian Portuguese with burnt orange/cream colors, a self-hosted Nunito font and a custom monochrome two-koi mark. The README includes the requirement mapping and local execution commands. No publication or remote repository was created.
+CarpasTask provides typed tRPC CRUD, server-generated UUIDs and UTC timestamps, Zod validation, exclusively in-memory storage, real dynamic SSR, hydrated query data, cursor-based infinite scrolling, dedicated creation/edit pages, destructive confirmation, accessible feedback, responsive task cards and a local SVG logo. Optional civil date/time fields support a weekly calendar, and an on-page reminders panel displays overdue/upcoming tasks. The four original fields and required stack are preserved. The interface is Brazilian Portuguese with a printed-sheet layout: graph-paper background, dark rectangular borders, dotted rules, direct labels, orange accents, local Nunito font and a custom monochrome two-koi mark. The README includes the requirement mapping and local execution commands. No publication or remote repository was created.
 
 The data flow is: user action → tRPC HTTP adapter → shared Node.js repository → typed response → query invalidation and refreshed UI. Initial navigation uses the same router through a direct server caller.
 
@@ -16,10 +16,10 @@ The data flow is: user action → tRPC HTTP adapter → shared Node.js repositor
 | Required framework          | Installed Next.js **15.5.28**; never upgraded to 16                                                                                                                    |
 | TypeScript                  | `npm run typecheck` passed with strict mode                                                                                                                            |
 | ESLint                      | `npm run lint` passed without errors or warnings                                                                                                                       |
-| Unit/integration/components | `npm run test`: **20 passed**, 3 files, with Vitest 5.1.0                                                                                                              |
+| Unit/integration/components | `npm run test`: **21 passed**, 3 files, with Vitest 5.1.0                                                                                                              |
 | Production build            | `npm run build` passed; listing and edit routes are dynamic; creation has its own page                                                                                 |
 | Production start            | The Next production CLI was started for initial browser checks; the final runner uses the Next Node API with `dev: false` and stops its own server                     |
-| Browser suite               | `npm run test:e2e`: **7 passed**, Chromium                                                                                                                             |
+| Browser suite               | `npm run test:e2e`: **8 passed**, Chromium                                                                                                                             |
 | Genuine SSR                 | HTTP creation followed by page HTML containing an actual task `<h3>`; independently visible with JavaScript disabled                                                   |
 | Shared memory               | Task created by HTTP tRPC is rendered by the independent SSR entry point in the same process                                                                           |
 | CRUD                        | Browser create/edit/delete, delete cancellation, empty state and success feedback passed                                                                               |
@@ -38,7 +38,7 @@ The data flow is: user action → tRPC HTTP adapter → shared Node.js repositor
 | Source credential scan      | No matching API keys, tokens, passwords or private-key markers found in project source                                                                                 |
 | Production dependency audit | `npm audit --omit=dev --audit-level=low`: **0 vulnerabilities**                                                                                                        |
 
-The seven production browser scenarios cover: full CRUD through dedicated pages and keyboard deletion confirmation; list, agenda and edit SSR without JavaScript; incremental pagination and post-mutation refresh; automatic scroll plus network failure/retry; missing/invalid edit addresses; mobile/tablet/desktop overflow, local font loading and screenshots; calendar scheduling, navigation, rescheduling, clearing and deletion.
+The eight production browser scenarios cover: full CRUD through dedicated pages and keyboard deletion confirmation; list, calendar, reminders and edit SSR without JavaScript; incremental pagination and post-mutation refresh; automatic scroll plus network failure/retry; missing/invalid edit addresses; mobile/tablet/desktop overflow, local font loading and screenshots; calendar scheduling, navigation, rescheduling, clearing and deletion; reminders independent of card pagination and refreshed after date removal.
 
 ## Corrections made during verification
 
@@ -63,7 +63,9 @@ The seven production browser scenarios cover: full CRUD through dedicated pages 
 - Accessibility was checked through semantics, native dialog behavior, keyboard assertions and layout review; no manual screen-reader audit was performed.
 - Browser automation ran on Chromium, not Firefox or WebKit.
 - The list sorts the in-memory collection on each page request; this is appropriate for the small assessment dataset, not a large persistent task service.
-- Scheduling stores a civil date and optional wall-clock time, not a timezone-converting appointment or a duration. No reminders, external calendar integration, recurring events or drag-and-drop scheduling are implemented.
+- Scheduling stores a civil date and optional wall-clock time, not a timezone-converting appointment or a duration. Reminders are an on-page summary only; they do not send browser, push or email notifications. No external calendar integration, recurring events or drag-and-drop scheduling are implemented. There is no completion field; dates before today are classified as overdue, with that rule explained in the panel.
 - The original practical PDF requirements were compared with the implementation. Theoretical answers and the public GitHub link are still separate submission work; no theoretical answer sheet was generated, and nothing was deployed or published.
 
 Actual captures: [desktop](desktop.png), [mobile](mobile.png), [creation page](form.png), [mobile form](mobile-form.png), [empty state](empty.png). Suggested repository name: **carpastask**.
+
+The editorial layout revision passed all checks above. The removed planning slogan is asserted absent in the browser suite. Reminder totals and preview limits were checked against more than one page of records; edits/deletions and cleared dates refresh the panel through query invalidation.

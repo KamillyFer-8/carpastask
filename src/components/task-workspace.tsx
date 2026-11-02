@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
+  Bell,
   CalendarDays,
   Check,
   Feather,
@@ -11,22 +12,30 @@ import {
   Trash2,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { PAGE_SIZE, type Task, type TaskPage } from "@/lib/task";
+import {
+  PAGE_SIZE,
+  type Task,
+  type TaskPage,
+  type TaskReminders,
+} from "@/lib/task";
 import { AppLogo } from "./logo";
 import { Dialog } from "./dialog";
 import { friendlyError } from "@/lib/ui-error";
 import { TaskAgenda } from "./task-agenda";
 import { formatDay } from "@/lib/calendar";
+import { TaskReminderPanel } from "./task-reminders";
 export function TaskWorkspace({
   initialPage,
   success,
   initialAgenda,
   today,
+  initialReminders,
 }: {
   initialPage: TaskPage;
   success?: string;
   initialAgenda: Task[];
   today: string;
+  initialReminders: TaskReminders;
 }) {
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -46,6 +55,7 @@ export function TaskWorkspace({
       await Promise.all([
         utils.task.list.invalidate(),
         utils.task.agenda.invalidate(),
+        utils.task.reminders.invalidate(),
       ]);
     },
   });
@@ -84,33 +94,62 @@ export function TaskWorkspace({
     <main className="shell" id="conteudo">
       <section className="workspace-intro">
         <div className="intro-copy">
-          <p className="eyebrow">
-            <span className="tiny-dot" />
-            SEU PLANEJAMENTO, EM UM SÓ LUGAR
-          </p>
           <h1>
-            Seu dia, <span>bem organizado.</span>
+            Tarefas
+            <br />
+            <span>&amp; agenda.</span>
           </h1>
-          <p className="intro-description">
-            Veja o que vem pela frente e encontre tempo para o que importa.
-          </p>
+          <div className="intro-actions">
+            <Link className="primary" href="/tarefas/nova">
+              <Plus size={18} />
+              Nova tarefa
+            </Link>
+            <a className="intro-calendar-link" href="#agenda">
+              Ver calendário
+            </a>
+          </div>
         </div>
-        <Link className="primary" href="/tarefas/nova">
-          <Plus size={19} />
-          Nova tarefa
-        </Link>
+        <div className="workspace-stamp">
+          <span>HOJE</span>
+          <time dateTime={today}>
+            {formatDay(today, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }).replaceAll("/", ".")}
+          </time>
+          <svg viewBox="0 0 190 40" aria-hidden="true">
+            {Array.from({ length: 38 }, (_, index) => (
+              <rect
+                key={index}
+                x={index * 5}
+                width={[2, 1, 3, 1, 4, 2][index % 6]}
+                height={index % 5 === 0 ? 35 : 30}
+                fill="currentColor"
+              />
+            ))}
+          </svg>
+          <span>{formatDay(today, { weekday: "long" })}</span>
+        </div>
       </section>
       <nav className="workspace-nav" aria-label="Seções do planejamento">
         <a href="#agenda">
           <CalendarDays size={16} />
-          Agenda semanal
+          Calendário
+        </a>
+        <a href="#lembretes">
+          <Bell size={16} />
+          Lembretes
         </a>
         <a href="#tarefas">
           <Feather size={16} />
           Todas as tarefas
         </a>
       </nav>
-      <TaskAgenda initialTasks={initialAgenda} today={today} />
+      <div className="planning-grid">
+        <TaskAgenda initialTasks={initialAgenda} today={today} />
+        <TaskReminderPanel initialData={initialReminders} today={today} />
+      </div>
       <section
         className="tasks-section"
         id="tarefas"
@@ -118,7 +157,9 @@ export function TaskWorkspace({
       >
         <div className="list-heading">
           <div>
-            <p className="eyebrow">COM DATA OU SEM, ESTÁ TUDO AQUI</p>
+            <span className="section-number" aria-hidden="true">
+              03
+            </span>
             <h2 id="tasks-heading">
               Todas as tarefas{" "}
               <span
@@ -156,15 +197,12 @@ export function TaskWorkspace({
             <div className="empty-icon">
               <Feather size={28} strokeWidth={1.5} />
             </div>
-            <h3>Sua primeira tarefa começa aqui.</h3>
-            <p>Crie uma tarefa agora. A data pode ficar para depois.</p>
+            <h3>Nenhuma tarefa.</h3>
+            <p>Adicione um título. A data e a descrição são opcionais.</p>
             <Link className="secondary" href="/tarefas/nova">
               <Plus size={17} />
-              Criar minha primeira tarefa
+              Criar tarefa
             </Link>
-            <span className="empty-caption">
-              Ideias, entrevistas, entregas. Cada uma no seu lugar.
-            </span>
           </section>
         ) : (
           <>
@@ -245,9 +283,9 @@ export function TaskWorkspace({
       <footer>
         <span className="footer-brand">
           <AppLogo />
-          Menos ruído. Mais clareza.
+          CarpasTask
         </span>
-        <span>Feito para acompanhar o seu ritmo.</span>
+        <a href="#conteudo">Voltar ao início ↑</a>
       </footer>
       {deleting && (
         <Dialog

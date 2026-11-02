@@ -1,6 +1,6 @@
 # CarpasTask
 
-**Menos ruído. Mais clareza.** A small, accessible task manager built for the Artefact Software Engineer Brasil practical assessment.
+An accessible task manager with a calendar and on-page reminders, built for the Artefact Software Engineer Brasil practical assessment.
 
 Create, edit and delete tasks, optionally schedule a date/time, review a weekly agenda, and browse task cards with cursor pagination. The first task page and current weekly agenda are rendered on the server. The interface is Brazilian Portuguese, with a locally implemented two-koi SVG mark, responsive cards, dedicated create/edit pages and an accessible deletion dialog. There are no accounts, databases, external APIs or persistence services.
 
@@ -49,7 +49,7 @@ Next.js **15** App Router, React 19, strict TypeScript, tRPC 11, Zod 4, TanStack
 
 ```text
 src/
-  app/                 App Router page, layout, loading/error UI, tRPC HTTP handler
+  app/                 App Router pages, layout, error UI, tRPC HTTP handler
   components/          Task workspace, form, native dialog, SVG logo
   lib/                 Shared contracts/validation and tRPC React provider
   server/
@@ -77,18 +77,19 @@ type Task = {
 
 Blank descriptions normalize to `undefined`. Updates replace the editable fields and preserve ID and creation time. Creation timestamps display consistently in Brazilian Portuguese and UTC. Optional values are explicitly replaced on update so clearing a date/description works across JSON serialization. Shared Zod schemas provide immediate form validation and authoritative server validation. tRPC infers client types from the router; type imports do not send server code to the browser. `server-only` guards backend modules.
 
-The original four required fields remain unchanged. Scheduling is an optional enhancement requested during interface refinement; the assessment permits at least those original fields. Dates are real calendar dates between 1900 and 9998, times use 24-hour `HH:mm`, and a time requires a date. These civil values do not shift across timezones. Creation timestamps remain distinct from scheduled dates. Leaving the date blank is valid; clearing it also clears the time. Tasks with a date but no time appear as **Dia todo**. No reminders or external calendar synchronization are implemented.
+The original four required fields remain unchanged. Scheduling is an optional enhancement requested during interface refinement; the assessment permits at least those original fields. Dates are real calendar dates between 1900 and 9998, times use 24-hour `HH:mm`, and a time requires a date. These civil values do not shift across timezones. Creation timestamps remain distinct from scheduled dates. Leaving the date blank is valid; clearing it also clears the time. Tasks with a date but no time appear as **Dia todo**. The reminders panel is on-page only: no browser, email or push notifications or external calendar synchronization are implemented.
 
 The HTTP adapter is `/api/trpc/[trpc]`; frontend calls use tRPC exclusively.
 
-| Procedure     | Input                                             | Result                                |
-| ------------- | ------------------------------------------------- | ------------------------------------- |
-| `task.create` | `{ titulo, descricao? }`                          | Created task                          |
-| `task.get`    | `{ id }`                                          | Task for the edit page                |
-| `task.agenda` | `{ inicio, fim }` civil dates, bounded range      | All scheduled tasks in the date range |
-| `task.list`   | `{ limit?: 1..50, cursor?: { dataCriacao, id } }` | `{ items, nextCursor }`               |
-| `task.update` | `{ id, titulo, descricao? }`                      | Updated task                          |
-| `task.delete` | `{ id }`                                          | `{ success: true }`                   |
+| Procedure        | Input                                             | Result                                                          |
+| ---------------- | ------------------------------------------------- | --------------------------------------------------------------- |
+| `task.create`    | `{ titulo, descricao? }`                          | Created task                                                    |
+| `task.get`       | `{ id }`                                          | Task for the edit page                                          |
+| `task.agenda`    | `{ inicio, fim }` civil dates, bounded range      | All scheduled tasks in the date range                           |
+| `task.reminders` | `{ hoje }` civil date                             | Overdue/upcoming totals and up to three task previews per group |
+| `task.list`      | `{ limit?: 1..50, cursor?: { dataCriacao, id } }` | `{ items, nextCursor }`                                         |
+| `task.update`    | `{ id, titulo, descricao? }`                      | Updated task                                                    |
+| `task.delete`    | `{ id }`                                          | `{ success: true }`                                             |
 
 Invalid inputs produce `BAD_REQUEST`. Missing records produce `NOT_FOUND` with “Tarefa não encontrada.” Unexpected failures have a generic user-facing message; response stack traces are removed. Forms preserve input on failure and disable controls while saving. Deletes wait for backend success. Successful mutations invalidate list queries and announce feedback; creation/editing return to the list with a localized success message. Query failures offer a retry.
 
@@ -112,7 +113,11 @@ IntersectionObserver preloads within 160px of the list end. Fetches are blocked 
 
 ## Design, accessibility and security
 
-The interface uses burnt orange, cream surfaces, rounded cards and the self-hosted Nunito variable font (`@fontsource-variable/nunito`, SIL Open Font License). There are no requests to Google Fonts at runtime. A custom monochrome SVG shows two koi circling, inspired by the user-provided reference; no stock image is embedded. A compact planning header, seven-day agenda and responsive card grid prioritize task content. Week columns become day rows on phones, with no page-level horizontal scrolling. Warm card tints provide visual rhythm without adding priority/status fields or unrelated dashboard features.
+The interface follows a printed-sheet visual direction: graph-paper background, light paper surfaces, dark rectangular borders, dotted dividers, bold headings and monospace annotations. Burnt orange marks primary actions, and the custom monochrome two-koi SVG remains the brand mark. Nunito is self-hosted (`@fontsource-variable/nunito`, SIL Open Font License); there are no requests to Google Fonts at runtime. No stock images are embedded. A weekly calendar and reminders panel share the desktop workspace; all task cards appear below. On phones the panels stack and calendar columns become day rows without page-level horizontal overflow. Labels are functional rather than promotional. The barcode-like header ornament is decorative and hidden from assistive technology.
+
+## On-page reminders
+
+`task.reminders({ hoje })` reads the complete repository, independently of task pagination. **Atrasadas** contains tasks dated before today; **Hoje e próximos dias** covers today plus six days. Each section shows the real total and up to three preview links to edit the task. There is no separate reminder entity or completion/status field. The panel explains that dates before today count as overdue, rather than inferring whether a real-world task was completed. The server preloads this query alongside tasks and calendar data. Create, update and delete operations invalidate all three query groups so cleared or moved dates are reflected immediately.
 
 Semantic headings, labeled fields, visible focus rings, a skip link and status/alert regions support keyboard and screen-reader use. Native `<dialog>.showModal()` provides focus containment for deletion; Escape cancels, and closing restores focus. Pending deletion prevents dismissal. Creation/editing use separate pages with a back link, cancel and save actions. Long content wraps and mobile actions stay visible. Motion respects reduced-motion preferences.
 

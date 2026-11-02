@@ -1,6 +1,13 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { Cursor, Task, TaskPage, TaskFields } from "@/lib/task";
+import type {
+  Cursor,
+  Task,
+  TaskPage,
+  TaskFields,
+  TaskReminders,
+} from "@/lib/task";
+import { addDays } from "@/lib/calendar";
 
 const compare = (a: Cursor, b: Cursor) =>
   b.dataCriacao.localeCompare(a.dataCriacao) || b.id.localeCompare(a.id);
@@ -47,6 +54,14 @@ export class TaskRepository {
         candidates.length > limit && last
           ? { id: last.id, dataCriacao: last.dataCriacao }
           : null,
+    };
+  }
+  reminders(today: string): TaskReminders {
+    const atrasadas = this.agenda("1900-01-01", addDays(today, -1)).reverse();
+    const proximas = this.agenda(today, addDays(today, 6));
+    return {
+      atrasadas: { total: atrasadas.length, items: atrasadas.slice(0, 3) },
+      proximas: { total: proximas.length, items: proximas.slice(0, 3) },
     };
   }
   update(id: string, fields: TaskFields): Task | undefined {
