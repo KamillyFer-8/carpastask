@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { Cursor, Task, TaskPage } from "@/lib/task";
+import type { Cursor, Task, TaskPage, TaskFields } from "@/lib/task";
 
 const compare = (a: Cursor, b: Cursor) =>
   b.dataCriacao.localeCompare(a.dataCriacao) || b.id.localeCompare(a.id);
@@ -10,7 +10,7 @@ export class TaskRepository {
     const task = this.tasks.get(id);
     return task ? { ...task } : undefined;
   }
-  create(fields: Pick<Task, "titulo" | "descricao">): Task {
+  create(fields: TaskFields): Task {
     const task = {
       ...fields,
       id: randomUUID(),
@@ -18,6 +18,22 @@ export class TaskRepository {
     };
     this.tasks.set(task.id, task);
     return { ...task };
+  }
+  agenda(inicio: string, fim: string): Task[] {
+    return [...this.tasks.values()]
+      .filter(
+        (task) =>
+          task.dataAgendada &&
+          task.dataAgendada >= inicio &&
+          task.dataAgendada <= fim,
+      )
+      .sort(
+        (a, b) =>
+          a.dataAgendada!.localeCompare(b.dataAgendada!) ||
+          (a.horario ?? "").localeCompare(b.horario ?? "") ||
+          compare(a, b),
+      )
+      .map((task) => ({ ...task }));
   }
   list(limit: number, cursor?: Cursor | null): TaskPage {
     const candidates = [...this.tasks.values()]
@@ -33,13 +49,18 @@ export class TaskRepository {
           : null,
     };
   }
-  update(
-    id: string,
-    fields: Pick<Task, "titulo" | "descricao">,
-  ): Task | undefined {
+  update(id: string, fields: TaskFields): Task | undefined {
     const existing = this.tasks.get(id);
     if (!existing) return;
-    const updated = { ...existing, ...fields };
+    // Updates replace editable fields. JSON omits undefined keys, so assign
+    // optional values explicitly to allow clearing descriptions/schedules.
+    const updated = {
+      ...existing,
+      titulo: fields.titulo,
+      descricao: fields.descricao,
+      dataAgendada: fields.dataAgendada,
+      horario: fields.horario,
+    };
     this.tasks.set(id, updated);
     return { ...updated };
   }

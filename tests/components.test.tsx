@@ -19,6 +19,40 @@ describe("TaskForm", () => {
     expect(submit).toHaveBeenCalledWith({
       titulo: "Review",
       descricao: undefined,
+      dataAgendada: undefined,
+      horario: undefined,
+    });
+  });
+  it("submits a scheduled date/time and clears both together", async () => {
+    const submit = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <TaskForm
+        pending={false}
+        initialDate="2026-11-05"
+        onSubmit={submit}
+        onCancel={vi.fn()}
+      />,
+    );
+    await user.type(screen.getByLabelText(/Título/), "Entrevista");
+    await user.type(screen.getByLabelText(/Horário/), "14:30");
+    await user.click(screen.getByRole("button", { name: "Salvar tarefa" }));
+    expect(submit).toHaveBeenLastCalledWith({
+      titulo: "Entrevista",
+      descricao: undefined,
+      dataAgendada: "2026-11-05",
+      horario: "14:30",
+    });
+    await user.click(
+      screen.getByRole("button", { name: "Remover data e horário" }),
+    );
+    expect(screen.getByLabelText(/Horário/)).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Salvar tarefa" }));
+    expect(submit).toHaveBeenLastCalledWith({
+      titulo: "Entrevista",
+      descricao: undefined,
+      dataAgendada: undefined,
+      horario: undefined,
     });
   });
   it("displays pending feedback and blocks duplicate submissions", () => {

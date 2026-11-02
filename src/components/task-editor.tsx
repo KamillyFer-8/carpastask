@@ -6,11 +6,20 @@ import { trpc } from "@/lib/trpc";
 import type { Task } from "@/lib/task";
 import { TaskForm } from "./task-form";
 import { friendlyError } from "@/lib/ui-error";
-export function TaskEditor({ task }: { task?: Task }) {
+export function TaskEditor({
+  task,
+  initialDate,
+}: {
+  task?: Task;
+  initialDate?: string;
+}) {
   const router = useRouter();
   const utils = trpc.useUtils();
   async function saved() {
-    await utils.task.list.invalidate();
+    await Promise.all([
+      utils.task.list.invalidate(),
+      utils.task.agenda.invalidate(),
+    ]);
     router.push(`/?sucesso=${task ? "atualizada" : "criada"}`);
     router.refresh();
   }
@@ -31,12 +40,12 @@ export function TaskEditor({ task }: { task?: Task }) {
         </Link>
       )}
       <div className="editor-heading">
-        <p className="eyebrow">UM PASSO DE CADA VEZ</p>
-        <h1>{task ? "Editar tarefa" : "Uma ideia vira um próximo passo."}</h1>
+        <p className="eyebrow">ORGANIZE SEU DIA</p>
+        <h1>{task ? "Editar tarefa" : "O que você precisa fazer?"}</h1>
         <p>
           {task
-            ? "Ajuste os detalhes e siga no seu ritmo."
-            : "Tire da cabeça. Coloque aqui. Cuide disso no seu tempo."}
+            ? "Atualize os detalhes ou escolha uma nova data."
+            : "Adicione os detalhes e, se quiser, reserve uma data na agenda."}
         </p>
       </div>
       <div className="editor-grid">
@@ -55,6 +64,7 @@ export function TaskEditor({ task }: { task?: Task }) {
           </div>
           <TaskForm
             task={task}
+            initialDate={initialDate}
             pending={pending}
             error={
               create.error || update.error
@@ -71,10 +81,10 @@ export function TaskEditor({ task }: { task?: Task }) {
         </section>
         <aside className="editor-tip">
           <Leaf size={22} />
-          <h2>Comece pelo simples.</h2>
+          <h2>Tem dia marcado?</h2>
           <p>
-            Um título claro ajuda a encontrar o próximo passo. Os detalhes podem
-            vir depois.
+            Use a data para entrevistas, reuniões ou entregas. O horário é
+            opcional; sem ele, a tarefa aparece como “Dia todo”.
           </p>
           <span>Menos ruído. Mais clareza.</span>
         </aside>

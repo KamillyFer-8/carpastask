@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
-  ArrowRight,
   CalendarDays,
   Check,
   Feather,
@@ -16,12 +15,18 @@ import { PAGE_SIZE, type Task, type TaskPage } from "@/lib/task";
 import { AppLogo } from "./logo";
 import { Dialog } from "./dialog";
 import { friendlyError } from "@/lib/ui-error";
+import { TaskAgenda } from "./task-agenda";
+import { formatDay } from "@/lib/calendar";
 export function TaskWorkspace({
   initialPage,
   success,
+  initialAgenda,
+  today,
 }: {
   initialPage: TaskPage;
   success?: string;
+  initialAgenda: Task[];
+  today: string;
 }) {
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -38,7 +43,10 @@ export function TaskWorkspace({
     onSuccess: async () => {
       setDeleting(null);
       setFeedback("Tarefa excluída.");
-      await utils.task.list.invalidate();
+      await Promise.all([
+        utils.task.list.invalidate(),
+        utils.task.agenda.invalidate(),
+      ]);
     },
   });
   const { hasNextPage, isFetching, fetchNextPage } = list;
@@ -74,43 +82,45 @@ export function TaskWorkspace({
         : "");
   return (
     <main className="shell" id="conteudo">
-      <section className="intro">
+      <section className="workspace-intro">
         <div className="intro-copy">
           <p className="eyebrow">
             <span className="tiny-dot" />
-            UM POUCO DE ORDEM, MAIS LEVEZA
+            SEU PLANEJAMENTO, EM UM SÓ LUGAR
           </p>
           <h1>
-            Abra espaço para
-            <br />
-            <span>o que importa.</span>
+            Seu dia, <span>bem organizado.</span>
           </h1>
           <p className="intro-description">
-            Organize suas ideias e encontre seu próximo passo.
-            <br className="desktop-break" /> Uma tarefa de cada vez, no seu
-            ritmo.
+            Veja o que vem pela frente e encontre tempo para o que importa.
           </p>
-          <Link className="primary" href="/tarefas/nova">
-            <Plus size={19} />
-            Nova tarefa
-            <ArrowRight className="button-arrow" size={17} />
-          </Link>
         </div>
-        <div className="brand-art" aria-hidden="true">
-          <span className="orbit orbit-one" />
-          <span className="orbit orbit-two" />
-          <span className="art-dot art-dot-one" />
-          <span className="art-dot art-dot-two" />
-          <AppLogo />
-          <span className="art-caption">encontre o seu fluxo.</span>
-        </div>
+        <Link className="primary" href="/tarefas/nova">
+          <Plus size={19} />
+          Nova tarefa
+        </Link>
       </section>
-      <section className="tasks-section" aria-labelledby="tasks-heading">
+      <nav className="workspace-nav" aria-label="Seções do planejamento">
+        <a href="#agenda">
+          <CalendarDays size={16} />
+          Agenda semanal
+        </a>
+        <a href="#tarefas">
+          <Feather size={16} />
+          Todas as tarefas
+        </a>
+      </nav>
+      <TaskAgenda initialTasks={initialAgenda} today={today} />
+      <section
+        className="tasks-section"
+        id="tarefas"
+        aria-labelledby="tasks-heading"
+      >
         <div className="list-heading">
           <div>
-            <p className="eyebrow">SEU ESPAÇO DE FOCO</p>
+            <p className="eyebrow">COM DATA OU SEM, ESTÁ TUDO AQUI</p>
             <h2 id="tasks-heading">
-              Minhas tarefas{" "}
+              Todas as tarefas{" "}
               <span
                 className="count"
                 aria-label={`${tasks.length} tarefas carregadas`}
@@ -146,18 +156,14 @@ export function TaskWorkspace({
             <div className="empty-icon">
               <Feather size={28} strokeWidth={1.5} />
             </div>
-            <h3>
-              Uma lista em branco.
-              <br />
-              Um mundo de possibilidades.
-            </h3>
-            <p>Adicione sua primeira tarefa e deixe o dia mais leve.</p>
+            <h3>Sua primeira tarefa começa aqui.</h3>
+            <p>Crie uma tarefa agora. A data pode ficar para depois.</p>
             <Link className="secondary" href="/tarefas/nova">
               <Plus size={17} />
               Criar minha primeira tarefa
             </Link>
             <span className="empty-caption">
-              Começar pequeno também é começar.
+              Ideias, entrevistas, entregas. Cada uma no seu lugar.
             </span>
           </section>
         ) : (
@@ -165,13 +171,25 @@ export function TaskWorkspace({
             <ul className="task-list">
               {tasks.map((task) => (
                 <li key={task.id}>
-                  <article className="task-card">
-                    <span className="task-marker" aria-hidden="true" />
+                  <article
+                    className={`task-card${task.dataAgendada ? " is-scheduled" : ""}`}
+                  >
+                    <div className="task-date-badge">
+                      <CalendarDays size={14} />
+                      {task.dataAgendada ? (
+                        <time dateTime={task.dataAgendada}>
+                          {formatDay(task.dataAgendada)}
+                          {task.horario ? ` · ${task.horario}` : " · Dia todo"}
+                        </time>
+                      ) : (
+                        <span>Sem data definida</span>
+                      )}
+                    </div>
                     <div className="task-content">
                       <h3>{task.titulo}</h3>
                       {task.descricao && <p>{task.descricao}</p>}
                       <time dateTime={task.dataCriacao}>
-                        <CalendarDays size={13} />
+                        Criada em{" "}
                         {new Intl.DateTimeFormat("pt-BR", {
                           day: "numeric",
                           month: "short",
@@ -215,7 +233,7 @@ export function TaskWorkspace({
                   {list.isFetchingNextPage ? "Carregando…" : "Carregar mais"}
                 </button>
               ) : (
-                <p>Por aqui, é tudo. Um passo de cada vez.</p>
+                <p>Todas as tarefas foram carregadas.</p>
               )}
               <span role="status">
                 {list.isFetchingNextPage ? "Carregando mais tarefas…" : ""}

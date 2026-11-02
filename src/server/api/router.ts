@@ -1,7 +1,13 @@
 import "server-only";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { cursorSchema, PAGE_SIZE, taskFields, taskId } from "@/lib/task";
+import {
+  agendaRange,
+  cursorSchema,
+  PAGE_SIZE,
+  taskFields,
+  taskId,
+} from "@/lib/task";
 import {
   taskRepository,
   type TaskRepository,
@@ -11,7 +17,7 @@ const t = initTRPC.context<{ repository: TaskRepository }>().create({
     if (error.code === "INTERNAL_SERVER_ERROR")
       return {
         ...shape,
-        message: "Algo deu errado. Please try again.",
+        message: "Algo deu errado. Tente novamente.",
         data: { ...shape.data, stack: undefined },
       };
     return { ...shape, data: { ...shape.data, stack: undefined } };
@@ -19,6 +25,11 @@ const t = initTRPC.context<{ repository: TaskRepository }>().create({
 });
 export const appRouter = t.router({
   task: t.router({
+    agenda: t.procedure
+      .input(agendaRange)
+      .query(({ ctx, input }) =>
+        ctx.repository.agenda(input.inicio, input.fim),
+      ),
     get: t.procedure.input(z.object({ id: taskId })).query(({ ctx, input }) => {
       const task = ctx.repository.get(input.id);
       if (!task)
@@ -44,12 +55,10 @@ export const appRouter = t.router({
         ctx.repository.list(input.limit, input.cursor),
       ),
     update: t.procedure
-      .input(taskFields.extend({ id: taskId }))
+      .input(taskFields.safeExtend({ id: taskId }))
       .mutation(({ ctx, input }) => {
-        const task = ctx.repository.update(input.id, {
-          titulo: input.titulo,
-          descricao: input.descricao,
-        });
+        const { id, ...fields } = input;
+        const task = ctx.repository.update(id, fields);
         if (!task)
           throw new TRPCError({
             code: "NOT_FOUND",

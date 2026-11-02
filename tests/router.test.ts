@@ -10,11 +10,101 @@ describe("task router and isolated repository", () => {
     caller = appRouter.createCaller({ repository });
   });
   afterEach(() => vi.useRealTimers());
-  it('reads a task for the dedicated edit page and rejects missing IDs', async () => {
-    const task = await caller.task.create({titulo: 'Editar pela URL'});
-    expect(await caller.task.get({id: task.id})).toEqual(task);
-    await expect(caller.task.get({id: randomUUID()})).rejects.toMatchObject({code: 'NOT_FOUND'});
-    await expect(caller.task.get({id: 'invalid'})).rejects.toMatchObject({code: 'BAD_REQUEST'});
+  it("creates, reschedules and clears a date without altering creation metadata", async () => {
+    const task = await caller.task.create({
+      titulo: "Entrevista",
+      dataAgendada: "2026-11-05",
+      horario: "14:30",
+    });
+    expect(task).toMatchObject({
+      dataAgendada: "2026-11-05",
+      horario: "14:30",
+    });
+    const moved = await caller.task.update({
+      id: task.id,
+      titulo: task.titulo,
+      dataAgendada: "2026-11-12",
+      horario: "09:00",
+    });
+    expect(moved.dataCriacao).toBe(task.dataCriacao);
+    expect(
+      await caller.task.agenda({ inicio: "2026-11-02", fim: "2026-11-08" }),
+    ).toEqual([]);
+    expect(
+      await caller.task.agenda({ inicio: "2026-11-09", fim: "2026-11-15" }),
+    ).toEqual([moved]);
+    const cleared = await caller.task.update({
+      id: task.id,
+      titulo: task.titulo,
+      dataAgendada: "",
+      horario: "",
+    });
+    expect(cleared.dataAgendada).toBeUndefined();
+    expect(cleared.horario).toBeUndefined();
+    await caller.task.update({
+      id: task.id,
+      titulo: task.titulo,
+      dataAgendada: "2026-11-12",
+      horario: "09:00",
+    });
+    const omitted = await caller.task.update({
+      id: task.id,
+      titulo: task.titulo,
+    });
+    expect(omitted.dataAgendada).toBeUndefined();
+    expect(omitted.horario).toBeUndefined();
+  });
+  it("validates real calendar dates, times, date dependencies and bounded ranges", async () => {
+    for (const fields of [
+      { dataAgendada: "2026-02-30" },
+      { dataAgendada: "2026-11-05", horario: "25:00" },
+      { horario: "14:00" },
+      { dataAgendada: "1899-12-31" },
+    ]) {
+      await expect(
+        caller.task.create({ titulo: "Invalid", ...fields }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    }
+    await expect(
+      caller.task.agenda({ inicio: "2026-11-08", fim: "2026-11-01" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller.task.agenda({ inicio: "2026-01-01", fim: "2026-11-01" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+  it("loads the complete weekly agenda independently of list pagination", async () => {
+    for (let index = 0; index < 25; index++)
+      await caller.task.create({
+        titulo: `Tarefa ${index}`,
+        dataAgendada: "2026-11-05",
+        horario: index % 2 ? "14:00" : undefined,
+      });
+    await caller.task.create({
+      titulo: "Fora da semana",
+      dataAgendada: "2026-11-12",
+    });
+    await caller.task.create({ titulo: "Sem data" });
+    const result = await caller.task.agenda({
+      inicio: "2026-11-02",
+      fim: "2026-11-08",
+    });
+    expect(result).toHaveLength(25);
+    expect(result[0].horario).toBeUndefined();
+    expect(result.at(-1)?.horario).toBe("14:00");
+    result[0].titulo = "External mutation";
+    expect((await caller.task.get({ id: result[0].id })).titulo).not.toBe(
+      "External mutation",
+    );
+  });
+  it("reads a task for the dedicated edit page and rejects missing IDs", async () => {
+    const task = await caller.task.create({ titulo: "Editar pela URL" });
+    expect(await caller.task.get({ id: task.id })).toEqual(task);
+    await expect(caller.task.get({ id: randomUUID() })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    await expect(caller.task.get({ id: "invalid" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
   it("creates normalized tasks with server IDs and dates", async () => {
     const task = await caller.task.create({
