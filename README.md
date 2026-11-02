@@ -113,7 +113,7 @@ IntersectionObserver preloads within 160px of the list end. Fetches are blocked 
 
 ## Design, accessibility and security
 
-The interface follows a printed-sheet visual direction: graph-paper background, light paper surfaces, dark rectangular borders, dotted dividers, bold headings and monospace annotations. Burnt orange marks primary actions, and the custom monochrome two-koi SVG remains the brand mark. Nunito is self-hosted (`@fontsource-variable/nunito`, SIL Open Font License); there are no requests to Google Fonts at runtime. No stock images are embedded. A weekly calendar and reminders panel share the desktop workspace; all task cards appear below. On phones the panels stack and calendar columns become day rows without page-level horizontal overflow. Labels are functional rather than promotional. The barcode-like header ornament is decorative and hidden from assistive technology.
+The interface follows a printed-sheet visual direction: graph-paper background, light paper surfaces, dark rectangular borders, dotted dividers, bold headings and monospace annotations. Burnt orange marks primary actions, and the custom monochrome two-koi SVG remains the brand mark. Nunito is self-hosted (`@fontsource-variable/nunito`, SIL Open Font License); there are no requests to Google Fonts at runtime. No stock images are embedded. All task cards appear first. The weekly calendar and reminders panel share the desktop workspace below them; section links and numbering follow the same order. On phones the panels stack and calendar columns become day rows without page-level horizontal overflow. Labels are functional rather than promotional. The barcode-like header ornament is decorative and hidden from assistive technology.
 
 ## On-page reminders
 

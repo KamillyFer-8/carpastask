@@ -133,6 +133,10 @@ export function TaskWorkspace({
         </div>
       </section>
       <nav className="workspace-nav" aria-label="Seções do planejamento">
+        <a href="#tarefas">
+          <Feather size={16} />
+          Todas as tarefas
+        </a>
         <a href="#agenda">
           <CalendarDays size={16} />
           Calendário
@@ -141,15 +145,7 @@ export function TaskWorkspace({
           <Bell size={16} />
           Lembretes
         </a>
-        <a href="#tarefas">
-          <Feather size={16} />
-          Todas as tarefas
-        </a>
       </nav>
-      <div className="planning-grid">
-        <TaskAgenda initialTasks={initialAgenda} today={today} />
-        <TaskReminderPanel initialData={initialReminders} today={today} />
-      </div>
       <section
         className="tasks-section"
         id="tarefas"
@@ -158,7 +154,7 @@ export function TaskWorkspace({
         <div className="list-heading">
           <div>
             <span className="section-number" aria-hidden="true">
-              03
+              01
             </span>
             <h2 id="tasks-heading">
               Todas as tarefas{" "}
@@ -280,6 +276,10 @@ export function TaskWorkspace({
           </>
         )}
       </section>
+      <div className="planning-grid">
+        <TaskAgenda initialTasks={initialAgenda} today={today} />
+        <TaskReminderPanel initialData={initialReminders} today={today} />
+      </div>
       <footer>
         <span className="footer-brand">
           <AppLogo />

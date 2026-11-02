@@ -248,6 +248,7 @@ svg {
   color: var(--paper);
 }
 .planning-grid {
+  margin-top: 25px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 285px;
   gap: 22px;
@@ -1253,7 +1254,7 @@ dialog::backdrop {
     width: 100%;
     margin-bottom: 20px;
     display: grid;
-    grid-template-columns: 1fr 1fr 1.3fr;
+    grid-template-columns: 1.3fr 1fr 1fr;
   }
   .workspace-nav a {
     padding: 12px 5px;

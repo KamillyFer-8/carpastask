@@ -30,7 +30,7 @@ export function TaskAgenda({
       <div className="agenda-toolbar">
         <div>
           <span className="section-number" aria-hidden="true">
-            01
+            02
           </span>
           <h2 id="agenda-heading">Calendário</h2>
           <p className="section-description">

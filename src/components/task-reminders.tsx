@@ -22,7 +22,7 @@ export function TaskReminderPanel({
     >
       <div className="panel-heading">
         <span className="section-number" aria-hidden="true">
-          02
+          03
         </span>
         <h2 id="reminders-heading">Lembretes</h2>
         <Bell size={17} />
