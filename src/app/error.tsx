@@ -2,10 +2,10 @@
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
     <main className="shell">
-      <h1>Something went wrong.</h1>
-      <p>Please try loading your tasks again.</p>
+      <h1>Algo deu errado.</h1>
+      <p>Tente carregar suas tarefas novamente.</p>
       <button className="primary" onClick={reset}>
-        Try again
+        Tentar novamente
       </button>
     </main>
   );

@@ -11,7 +11,7 @@ const t = initTRPC.context<{ repository: TaskRepository }>().create({
     if (error.code === "INTERNAL_SERVER_ERROR")
       return {
         ...shape,
-        message: "Something went wrong. Please try again.",
+        message: "Algo deu errado. Please try again.",
         data: { ...shape.data, stack: undefined },
       };
     return { ...shape, data: { ...shape.data, stack: undefined } };
@@ -19,6 +19,15 @@ const t = initTRPC.context<{ repository: TaskRepository }>().create({
 });
 export const appRouter = t.router({
   task: t.router({
+    get: t.procedure.input(z.object({ id: taskId })).query(({ ctx, input }) => {
+      const task = ctx.repository.get(input.id);
+      if (!task)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tarefa não encontrada.",
+        });
+      return task;
+    }),
     create: t.procedure
       .input(taskFields)
       .mutation(({ ctx, input }) => ctx.repository.create(input)),
@@ -44,7 +53,7 @@ export const appRouter = t.router({
         if (!task)
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Task not found.",
+            message: "Tarefa não encontrada.",
           });
         return task;
       }),
@@ -54,7 +63,7 @@ export const appRouter = t.router({
         if (!ctx.repository.delete(input.id))
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Task not found.",
+            message: "Tarefa não encontrada.",
           });
         return { success: true };
       }),

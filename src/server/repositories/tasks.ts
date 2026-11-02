@@ -6,6 +6,10 @@ const compare = (a: Cursor, b: Cursor) =>
   b.dataCriacao.localeCompare(a.dataCriacao) || b.id.localeCompare(a.id);
 export class TaskRepository {
   private tasks = new Map<string, Task>();
+  get(id: string): Task | undefined {
+    const task = this.tasks.get(id);
+    return task ? { ...task } : undefined;
+  }
   create(fields: Pick<Task, "titulo" | "descricao">): Task {
     const task = {
       ...fields,

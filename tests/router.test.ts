@@ -10,6 +10,12 @@ describe("task router and isolated repository", () => {
     caller = appRouter.createCaller({ repository });
   });
   afterEach(() => vi.useRealTimers());
+  it('reads a task for the dedicated edit page and rejects missing IDs', async () => {
+    const task = await caller.task.create({titulo: 'Editar pela URL'});
+    expect(await caller.task.get({id: task.id})).toEqual(task);
+    await expect(caller.task.get({id: randomUUID()})).rejects.toMatchObject({code: 'NOT_FOUND'});
+    await expect(caller.task.get({id: 'invalid'})).rejects.toMatchObject({code: 'BAD_REQUEST'});
+  });
   it("creates normalized tasks with server IDs and dates", async () => {
     const task = await caller.task.create({
       titulo: "  Plan review  ",
@@ -53,7 +59,10 @@ describe("task router and isolated repository", () => {
     expect((await caller.task.list()).items).toHaveLength(0);
     await expect(
       caller.task.update({ id: randomUUID(), titulo: "Missing" }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND", message: "Task not found." });
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "Tarefa não encontrada.",
+    });
     await expect(caller.task.delete({ id: task.id })).rejects.toMatchObject({
       code: "NOT_FOUND",
     });

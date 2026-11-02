@@ -34,9 +34,9 @@ export function TaskForm({
   }
   return (
     <form onSubmit={submit} noValidate>
-      <p className="form-intro">A little clarity goes a long way.</p>
+      <p className="form-intro">Dê um nome claro ao que você quer fazer.</p>
       <label htmlFor="title">
-        Title <span className="muted">(required)</span>
+        Título <span className="muted">(obrigatório)</span>
       </label>
       <input
         id="title"
@@ -47,7 +47,7 @@ export function TaskForm({
         aria-required="true"
         aria-invalid={!!errors.titulo}
         aria-describedby={errors.titulo ? "title-error" : undefined}
-        placeholder="What needs your attention?"
+        placeholder="Ex.: revisar a apresentação do projeto"
         disabled={pending}
       />
       {errors.titulo && (
@@ -56,7 +56,7 @@ export function TaskForm({
         </p>
       )}
       <label htmlFor="description">
-        Description <span className="muted">(optional)</span>
+        Descrição <span className="muted">(opcional)</span>
       </label>
       <textarea
         id="description"
@@ -64,7 +64,7 @@ export function TaskForm({
         onChange={(e) => setDescricao(e.target.value)}
         maxLength={2000}
         rows={5}
-        placeholder="Add a few details…"
+        placeholder="Inclua os detalhes que ajudam a dar o próximo passo…"
         disabled={pending}
         aria-invalid={!!errors.descricao}
         aria-describedby={errors.descricao ? "description-error" : undefined}
@@ -86,10 +86,10 @@ export function TaskForm({
           disabled={pending}
           onClick={onCancel}
         >
-          Cancel
+          Cancelar
         </button>
         <button className="primary" disabled={pending} type="submit">
-          {pending ? "Saving…" : "Save task"}
+          {pending ? "Salvando…" : "Salvar tarefa"}
         </button>
       </div>
     </form>

@@ -1,8 +1,16 @@
 # CarpasTask
 
-**Simple tasks. Clear focus.** A small, accessible task manager built for the Artefact Software Engineer Brasil practical assessment.
+**Menos ruído. Mais clareza.** A small, accessible task manager built for the Artefact Software Engineer Brasil practical assessment.
 
-Create, edit and delete tasks, read the first page directly from server-rendered HTML, and load more using cursor pagination. The interface is English throughout, with a locally implemented SVG carp mark, responsive cards, native modal dialogs and accessible feedback. There are no accounts, databases, external APIs or persistence services.
+Create, edit and delete tasks, read the first page directly from server-rendered HTML, and load more using cursor pagination. The interface is Brazilian Portuguese, with a locally implemented two-koi SVG mark, responsive cards, dedicated create/edit pages and an accessible deletion dialog. There are no accounts, databases, external APIs or persistence services.
+
+## Pages and assessment alignment
+
+- `/`: dynamically server-rendered list, deletion confirmation and incremental loading.
+- `/tarefas/nova`: dedicated task creation page.
+- `/tarefas/[id]/editar`: dedicated edit page, loaded through a server-side tRPC caller. Refreshing or opening this address directly works; invalid/missing IDs display a localized not-found page.
+
+The implementation follows the original assessment PDF. The interface uses Brazilian Portuguese; the PDF does not mandate English. Creation and editing use actual routes to match the PDF's wording “Página de Criação/Atualização” literally. The theory answers and public GitHub submission remain separate deliverables; no publication is automatic.
 
 ## Run locally
 
@@ -65,18 +73,19 @@ type Task = {
 };
 ```
 
-Blank descriptions normalize to `undefined`. Updates replace the editable fields and preserve ID and creation time. Dates display consistently in English and UTC. Shared Zod schemas provide immediate form validation and authoritative server validation. tRPC infers client types from the router; type imports do not send server code to the browser. `server-only` guards backend modules.
+Blank descriptions normalize to `undefined`. Updates replace the editable fields and preserve ID and creation time. Dates display consistently in Brazilian Portuguese and UTC. Shared Zod schemas provide immediate form validation and authoritative server validation. tRPC infers client types from the router; type imports do not send server code to the browser. `server-only` guards backend modules.
 
 The HTTP adapter is `/api/trpc/[trpc]`; frontend calls use tRPC exclusively.
 
 | Procedure     | Input                                             | Result                  |
 | ------------- | ------------------------------------------------- | ----------------------- |
 | `task.create` | `{ titulo, descricao? }`                          | Created task            |
+| `task.get` | `{ id }` | Task for the edit page |
 | `task.list`   | `{ limit?: 1..50, cursor?: { dataCriacao, id } }` | `{ items, nextCursor }` |
 | `task.update` | `{ id, titulo, descricao? }`                      | Updated task            |
 | `task.delete` | `{ id }`                                          | `{ success: true }`     |
 
-Invalid inputs produce `BAD_REQUEST`. Missing records produce `NOT_FOUND` with “Task not found.” Unexpected failures have a generic user-facing message; response stack traces are removed. Forms preserve input on failure and disable controls while saving. Deletes wait for backend success. Successful mutations invalidate list queries and announce feedback; query failures offer a retry.
+Invalid inputs produce `BAD_REQUEST`. Missing records produce `NOT_FOUND` with “Tarefa não encontrada.” Unexpected failures have a generic user-facing message; response stack traces are removed. Forms preserve input on failure and disable controls while saving. Deletes wait for backend success. Successful mutations invalidate list queries and announce feedback; creation/editing return to the list with a localized success message. Query failures offer a retry.
 
 ## SSR and shared memory
 
@@ -90,11 +99,13 @@ Data exists **only while that Node.js process is alive**. Restarting loses every
 
 The initial page contains ten tasks. The repository sorts by descending ISO creation date, then descending UUID. Cursors carry both values rather than a row index or offset. The next page selects tuples strictly after the boundary, even when the cursor's record has been deleted. Later insertions appear on refresh/invalidation; older pages remain ordered. Tests cover timestamp ties, deletion of a cursor record, insertion between page loads and traversal of more than two pages.
 
-IntersectionObserver preloads within 160px of the list end. Fetches are blocked while a query is fetching. A keyboard-accessible **Load more** button is always available while more results exist, and the rendered task collection deduplicates by ID. Successful mutations invalidate the loaded pages; TanStack Query refetches from the start to rebuild cursor boundaries. The final page displays an end-of-list message.
+IntersectionObserver preloads within 160px of the list end. Fetches are blocked while a query is fetching. A keyboard-accessible **Carregar mais** button is always available while more results exist, and the rendered task collection deduplicates by ID. Successful mutations invalidate the loaded pages; TanStack Query refetches from the start to rebuild cursor boundaries. The final page displays an end-of-list message.
 
 ## Design, accessibility and security
 
-The interface uses quiet teal, warm neutral surfaces and simple cards. Semantic headings, labeled fields, visible focus rings, a skip link and status/alert regions support keyboard and screen-reader use. Native `<dialog>.showModal()` provides focus containment and inert background content; Escape cancels, and closing restores focus. Pending operations prevent dismissal. The form and destructive confirmation have separate clear actions. Long content wraps and mobile actions stay visible. Motion respects reduced-motion preferences.
+The interface uses burnt orange, cream surfaces, rounded cards and the self-hosted Nunito variable font (`@fontsource-variable/nunito`, SIL Open Font License). There are no requests to Google Fonts at runtime. A custom monochrome SVG shows two koi circling, inspired by the user-provided reference; no stock image is embedded. Clear primary actions, a contained list, readable spacing and visible edit/delete targets keep the layout focused.
+
+Semantic headings, labeled fields, visible focus rings, a skip link and status/alert regions support keyboard and screen-reader use. Native `<dialog>.showModal()` provides focus containment for deletion; Escape cancels, and closing restores focus. Pending deletion prevents dismissal. Creation/editing use separate pages with a back link, cancel and save actions. Long content wraps and mobile actions stay visible. Motion respects reduced-motion preferences.
 
 React escapes user text; there is no unsafe HTML rendering. Server-side schemas enforce lengths and UUIDs. No secrets or environment variables are needed. `.gitignore` excludes environment files, builds, dependencies and generated test artifacts. The public repository must not include `node_modules` or `.next`. This assessment is a local application: authentication, authorization, rate limiting and durable/multi-instance storage are outside scope. Do not expose an unauthenticated task store as a shared production service.
 
@@ -117,13 +128,14 @@ React escapes user text; there is no unsafe HTML rendering. Server-side schemas 
 | Infinite scroll + accessible fallback        | Observer, query and tuple cursor                     | Router pagination, production 25-task browser test     |
 | Stable ordering with concurrent changes      | Repository comparator/cursor                         | Tie, insert and deleted-boundary test                  |
 | Responsive long content                      | `app/globals.css`                                    | 390px browser overflow checks/screenshots              |
-| Branding/local SVG / English UI              | Logo, metadata, workspace                            | Source and actual screenshot review                    |
+| Branding/local SVG / Portuguese UI           | Two-koi logo, metadata, self-hosted font, workspace    | Source, font-load assertion and screenshots             |
+| Dedicated creation/update pages | `app/tarefas/nova`, `app/tarefas/[id]/editar` | Direct URL, refresh, cancel, submit and missing-ID browser tests |
 | Keyboard dialog and focus restoration        | `dialog.tsx`                                         | Escape/focus browser assertions                        |
 | Production flow / clean browser errors       | Playwright config                                    | Production end-to-end suite                            |
 | Documentation and limitations                | This README and verification report                  | Final review                                           |
 | No secrets or publishing                     | `.gitignore`, source review                          | Credential scan; no remote configured                  |
 
-The original assessment PDF was not present in the supplied directory. This checklist follows the user's pasted practical requirements; no theoretical answer sheet or submission PDF is generated.
+The original assessment PDF's practical requirements were reviewed against the implementation. No theoretical answer sheet or submission PDF is generated.
 
 Suggested public repository name: **carpastask**. No repository is published automatically.
 
@@ -132,3 +144,5 @@ Suggested public repository name: **carpastask**. No repository is published aut
 ![Desktop interface](docs/desktop.png)
 
 ![Mobile interface](docs/mobile.png)
+
+![Dedicated task form](docs/form.png)

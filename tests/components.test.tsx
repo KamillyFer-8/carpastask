@@ -8,14 +8,14 @@ describe("TaskForm", () => {
     const submit = vi.fn();
     const user = userEvent.setup();
     render(<TaskForm pending={false} onSubmit={submit} onCancel={vi.fn()} />);
-    await user.type(screen.getByLabelText(/Title/), "   ");
-    await user.click(screen.getByRole("button", { name: "Save task" }));
+    await user.type(screen.getByLabelText(/Título/), "   ");
+    await user.click(screen.getByRole("button", { name: "Salvar tarefa" }));
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Please enter a task title.",
+      "Informe um título para a tarefa.",
     );
     expect(submit).not.toHaveBeenCalled();
-    await user.type(screen.getByLabelText(/Title/), "Review");
-    await user.click(screen.getByRole("button", { name: "Save task" }));
+    await user.type(screen.getByLabelText(/Título/), "Review");
+    await user.click(screen.getByRole("button", { name: "Salvar tarefa" }));
     expect(submit).toHaveBeenCalledWith({
       titulo: "Review",
       descricao: undefined,
@@ -23,8 +23,8 @@ describe("TaskForm", () => {
   });
   it("displays pending feedback and blocks duplicate submissions", () => {
     render(<TaskForm pending onSubmit={vi.fn()} onCancel={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled();
-    expect(screen.getByLabelText(/Title/)).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Salvando…" })).toBeDisabled();
+    expect(screen.getByLabelText(/Título/)).toBeDisabled();
   });
   it("preserves input on server errors and supports cancel", async () => {
     const cancel = vi.fn();
@@ -32,15 +32,17 @@ describe("TaskForm", () => {
     render(
       <TaskForm
         pending={false}
-        error="Task not found."
+        error="Tarefa não encontrada."
         onSubmit={vi.fn()}
         onCancel={cancel}
       />,
     );
-    await user.type(screen.getByLabelText(/Title/), "Keep my draft");
-    expect(screen.getByRole("alert")).toHaveTextContent("Task not found.");
-    expect(screen.getByLabelText(/Title/)).toHaveValue("Keep my draft");
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.type(screen.getByLabelText(/Título/), "Keep my draft");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Tarefa não encontrada.",
+    );
+    expect(screen.getByLabelText(/Título/)).toHaveValue("Keep my draft");
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(cancel).toHaveBeenCalledOnce();
   });
 });

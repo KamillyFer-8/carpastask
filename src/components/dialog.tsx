@@ -35,7 +35,7 @@ export function Dialog({
         <h2 id="dialog-title">{title}</h2>
         <button
           className="icon-button"
-          aria-label="Close dialog"
+          aria-label="Fechar diálogo"
           disabled={busy}
           onClick={onClose}
         >

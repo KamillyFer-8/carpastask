@@ -3,9 +3,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
-  ArrowUpRight,
+  ArrowRight,
+  CalendarDays,
   Check,
-  ClipboardList,
+  Feather,
   Pencil,
   Plus,
   Trash2,
@@ -14,13 +15,16 @@ import { trpc } from "@/lib/trpc";
 import { PAGE_SIZE, type Task, type TaskPage } from "@/lib/task";
 import { AppLogo } from "./logo";
 import { Dialog } from "./dialog";
-import { TaskForm } from "./task-form";
-
-export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
-  const [editor, setEditor] = useState<Task | "new" | null>(null);
+import { friendlyError } from "@/lib/ui-error";
+export function TaskWorkspace({
+  initialPage,
+  success,
+}: {
+  initialPage: TaskPage;
+  success?: string;
+}) {
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [refreshError, setRefreshError] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const list = trpc.task.list.useInfiniteQuery(
     { limit: PAGE_SIZE },
@@ -30,25 +34,12 @@ export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
     },
   );
   const utils = trpc.useUtils();
-  async function changed(message: string) {
-    setEditor(null);
-    setDeleting(null);
-    setFeedback(message);
-    try {
-      await utils.task.list.invalidate();
-      setRefreshError(false);
-    } catch {
-      setRefreshError(true);
-    }
-  }
-  const create = trpc.task.create.useMutation({
-    onSuccess: () => changed("Task created successfully."),
-  });
-  const update = trpc.task.update.useMutation({
-    onSuccess: () => changed("Task updated successfully."),
-  });
   const remove = trpc.task.delete.useMutation({
-    onSuccess: () => changed("Task deleted."),
+    onSuccess: async () => {
+      setDeleting(null);
+      setFeedback("Tarefa excluída.");
+      await utils.task.list.invalidate();
+    },
   });
   const { hasNextPage, isFetching, fetchNextPage } = list;
   useEffect(() => {
@@ -74,99 +65,100 @@ export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
         .map((task) => [task.id, task]),
     ).values(),
   ];
-  const pending = create.isPending || update.isPending;
-  function openEditor(task: Task | "new") {
-    create.reset();
-    update.reset();
-    setEditor(task);
-  }
+  const notice =
+    feedback ||
+    (success === "criada"
+      ? "Tarefa criada com sucesso."
+      : success === "atualizada"
+        ? "Tarefa atualizada com sucesso."
+        : "");
   return (
-    <>
-      <a className="skip-link" href="#tasks">
-        Skip to tasks
-      </a>
-      <header className="app-header">
-        <div className="header-inner">
-          <Link className="brand" href="/" aria-label="CarpasTask home">
-            <span className="brand-icon">
-              <AppLogo />
-            </span>
-            CarpasTask<span className="brand-dot">.</span>
+    <main className="shell" id="conteudo">
+      <section className="intro">
+        <div className="intro-copy">
+          <p className="eyebrow">
+            <span className="tiny-dot" />
+            UM POUCO DE ORDEM, MAIS LEVEZA
+          </p>
+          <h1>
+            Abra espaço para
+            <br />
+            <span>o que importa.</span>
+          </h1>
+          <p className="intro-description">
+            Organize suas ideias e encontre seu próximo passo.
+            <br className="desktop-break" /> Uma tarefa de cada vez, no seu
+            ritmo.
+          </p>
+          <Link className="primary" href="/tarefas/nova">
+            <Plus size={19} />
+            Nova tarefa
+            <ArrowRight className="button-arrow" size={17} />
           </Link>
-          <span className="header-note">
-            A little space for a clearer mind.
-          </span>
         </div>
-      </header>
-      <main className="shell" id="tasks">
-        <section className="intro">
-          <div>
-            <p className="eyebrow">
-              <span /> MAKE ROOM FOR WHAT MATTERS
-            </p>
-            <h1>
-              Simple tasks.
-              <br />
-              <span>Clear focus.</span>
-            </h1>
-            <p className="intro-description">
-              Capture what’s next. Take it one task at a time.
-            </p>
-          </div>
-          <button
-            className="primary new-task"
-            onClick={() => openEditor("new")}
-          >
-            <Plus size={18} />
-            New task
-          </button>
-        </section>
+        <div className="brand-art" aria-hidden="true">
+          <span className="orbit orbit-one" />
+          <span className="orbit orbit-two" />
+          <span className="art-dot art-dot-one" />
+          <span className="art-dot art-dot-two" />
+          <AppLogo />
+          <span className="art-caption">encontre o seu fluxo.</span>
+        </div>
+      </section>
+      <section className="tasks-section" aria-labelledby="tasks-heading">
         <div className="list-heading">
-          <h2>
-            Your tasks{" "}
-            <span className="count" aria-label={`${tasks.length} tasks loaded`}>
-              {tasks.length}
-              {list.hasNextPage ? "+" : ""}
-            </span>
-          </h2>
+          <div>
+            <p className="eyebrow">SEU ESPAÇO DE FOCO</p>
+            <h2 id="tasks-heading">
+              Minhas tarefas{" "}
+              <span
+                className="count"
+                aria-label={`${tasks.length} tarefas carregadas`}
+              >
+                {tasks.length}
+                {list.hasNextPage ? "+" : ""}
+              </span>
+            </h2>
+          </div>
           <span className="sort-label">
-            Newest first <ArrowDown size={14} />
+            <ArrowDown size={15} />
+            Mais recentes
           </span>
         </div>
-        <div className="feedback" role="status" aria-live="polite">
-          {feedback && (
-            <>
-              <Check size={16} />
-              {feedback}
-            </>
+        <div role="status" aria-live="polite">
+          {notice && (
+            <p className="feedback">
+              <Check size={17} />
+              {notice}
+            </p>
           )}
         </div>
-        {(list.isError || refreshError) && (
+        {list.isError && (
           <div className="error-banner" role="alert">
-            Could not load your tasks.{" "}
-            <button
-              className="text-button"
-              onClick={() => {
-                setRefreshError(false);
-                void list.refetch();
-              }}
-            >
-              Try again
+            Não foi possível carregar as tarefas.{" "}
+            <button className="text-button" onClick={() => void list.refetch()}>
+              Tentar novamente
             </button>
           </div>
         )}
         {tasks.length === 0 ? (
           <section className="empty-state">
             <div className="empty-icon">
-              <ClipboardList size={30} strokeWidth={1.4} />
+              <Feather size={28} strokeWidth={1.5} />
             </div>
-            <h3>No tasks yet.</h3>
-            <p>Create your first task to get started.</p>
-            <button className="secondary" onClick={() => openEditor("new")}>
-              <Plus size={16} />
-              Create task
-            </button>
-            <span className="empty-caption">A fresh start. A clear head.</span>
+            <h3>
+              Uma lista em branco.
+              <br />
+              Um mundo de possibilidades.
+            </h3>
+            <p>Adicione sua primeira tarefa e deixe o dia mais leve.</p>
+            <Link className="secondary" href="/tarefas/nova">
+              <Plus size={17} />
+              Criar minha primeira tarefa
+            </Link>
+            <span className="empty-caption">
+              Começar pequeno também é começar.
+            </span>
           </section>
         ) : (
           <>
@@ -174,30 +166,33 @@ export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
               {tasks.map((task) => (
                 <li key={task.id}>
                   <article className="task-card">
-                    <div className="task-marker" aria-hidden="true" />
+                    <span className="task-marker" aria-hidden="true" />
                     <div className="task-content">
                       <h3>{task.titulo}</h3>
                       {task.descricao && <p>{task.descricao}</p>}
                       <time dateTime={task.dataCriacao}>
-                        {new Intl.DateTimeFormat("en-US", {
-                          month: "short",
+                        <CalendarDays size={13} />
+                        {new Intl.DateTimeFormat("pt-BR", {
                           day: "numeric",
+                          month: "short",
                           year: "numeric",
                           timeZone: "UTC",
                         }).format(new Date(task.dataCriacao))}
                       </time>
                     </div>
                     <div className="task-actions">
-                      <button
+                      <Link
                         className="icon-button"
-                        aria-label={`Edit ${task.titulo}`}
-                        onClick={() => openEditor(task)}
+                        href={`/tarefas/${task.id}/editar`}
+                        aria-label={`Editar ${task.titulo}`}
+                        title="Editar tarefa"
                       >
                         <Pencil size={17} />
-                      </button>
+                      </Link>
                       <button
                         className="icon-button delete-button"
-                        aria-label={`Delete ${task.titulo}`}
+                        aria-label={`Excluir ${task.titulo}`}
+                        title="Excluir tarefa"
                         onClick={() => {
                           remove.reset();
                           setDeleting(task);
@@ -217,59 +212,42 @@ export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
                   disabled={list.isFetching}
                   onClick={() => void list.fetchNextPage()}
                 >
-                  {list.isFetchingNextPage ? "Loading more…" : "Load more"}
+                  {list.isFetchingNextPage ? "Carregando…" : "Carregar mais"}
                 </button>
               ) : (
-                <p>You’re all caught up. One task at a time.</p>
+                <p>Por aqui, é tudo. Um passo de cada vez.</p>
               )}
               <span role="status">
-                {list.isFetchingNextPage ? "Loading more tasks…" : ""}
+                {list.isFetchingNextPage ? "Carregando mais tarefas…" : ""}
               </span>
             </div>
           </>
         )}
-        <footer>
-          <span className="footer-brand">
-            <AppLogo />
-            Less noise. More focus.
-          </span>
-          <span>
-            Made for your everyday.
-            <ArrowUpRight size={13} />
-          </span>
-        </footer>
-      </main>
-      {editor && (
-        <Dialog
-          title={editor === "new" ? "New task" : "Edit task"}
-          busy={pending}
-          onClose={() => setEditor(null)}
-        >
-          <TaskForm
-            task={editor === "new" ? undefined : editor}
-            pending={pending}
-            error={create.error?.message || update.error?.message}
-            onCancel={() => setEditor(null)}
-            onSubmit={(fields) => {
-              if (pending) return;
-              if (editor === "new") create.mutate(fields);
-              else update.mutate({ ...fields, id: editor.id });
-            }}
-          />
-        </Dialog>
-      )}
+      </section>
+      <footer>
+        <span className="footer-brand">
+          <AppLogo />
+          Menos ruído. Mais clareza.
+        </span>
+        <span>Feito para acompanhar o seu ritmo.</span>
+      </footer>
       {deleting && (
         <Dialog
-          title="Delete this task?"
+          title="Excluir esta tarefa?"
           busy={remove.isPending}
           onClose={() => setDeleting(null)}
         >
+          <div className="delete-symbol">
+            <Trash2 size={24} />
+          </div>
           <p className="delete-copy">
-            “{deleting.titulo}” will be deleted. This action cannot be undone.
+            “{deleting.titulo}” será excluída.
+            <br />
+            Esta ação não pode ser desfeita.
           </p>
           {remove.error && (
             <p className="field-error" role="alert">
-              {remove.error.message}
+              {friendlyError(remove.error)}
             </p>
           )}
           <div className="dialog-actions">
@@ -278,7 +256,7 @@ export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
               disabled={remove.isPending}
               onClick={() => setDeleting(null)}
             >
-              Cancel
+              Cancelar
             </button>
             <button
               className="danger"
@@ -287,11 +265,11 @@ export function TaskWorkspace({ initialPage }: { initialPage: TaskPage }) {
                 if (!remove.isPending) remove.mutate({ id: deleting.id });
               }}
             >
-              {remove.isPending ? "Deleting…" : "Delete task"}
+              {remove.isPending ? "Excluindo…" : "Excluir tarefa"}
             </button>
           </div>
         </Dialog>
       )}
-    </>
+    </main>
   );
 }
