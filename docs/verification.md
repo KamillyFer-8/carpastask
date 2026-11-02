@@ -1,5 +1,11 @@
 # Verification report
 
+## Documentation review
+
+The README-only content revision on November 2, 2026 re-ran strict TypeScript, ESLint and the unit/integration/component suite. All passed, with 21 tests across three files. Application source, dependencies, configurations and screenshots were not changed. Production build, the eight browser scenarios, demo capture and dependency audits below are earlier recorded evidence, not new runs for this documentation revision.
+
+All six README screenshot references and the documented package scripts were checked. The revised README separates mandatory requirements from optional calendar/reminder features and contains no em dashes or en dashes.
+
 Verified on November 2, 2026, on Windows with Node.js 24.18.0 and npm 11.16.0. The practical requirements were compared with the original two-page assessment PDF. The written-case email additionally requires English responses; the final interface, messages, documentation and demo content are English, while the specified Portuguese backend field names remain unchanged.
 
 ## Executed results
