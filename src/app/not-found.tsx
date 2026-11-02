@@ -2,10 +2,10 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="shell state-page" id="conteudo">
-      <h1>Tarefa não encontrada.</h1>
-      <p>Ela pode ter sido excluída ou o endereço pode estar incorreto.</p>
+      <h1>Task not found.</h1>
+      <p>The task may have been deleted, or the address may be incorrect.</p>
       <Link className="primary" href="/">
-        Voltar para tarefas
+        Back to tasks
       </Link>
     </main>
   );

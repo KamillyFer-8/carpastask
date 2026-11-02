@@ -32,34 +32,34 @@ export function TaskEditor({
       {pending ? (
         <span className="back-link" aria-disabled="true">
           <ArrowLeft size={17} />
-          Voltar para tarefas
+          Back to tasks
         </span>
       ) : (
         <Link href="/" className="back-link">
           <ArrowLeft size={17} />
-          Voltar para tarefas
+          Back to tasks
         </Link>
       )}
       <div className="editor-heading">
-        <h1>{task ? "Editar tarefa" : "Nova tarefa"}</h1>
+        <h1>{task ? "Edit task" : "New task"}</h1>
         <p>
           {task
-            ? "Atualize os detalhes ou escolha uma nova data."
-            : "Adicione os detalhes e, se quiser, reserve uma data na agenda."}
+            ? "Update the task details or choose a different date."
+            : "Add the task details and an optional date for the calendar."}
         </p>
       </div>
       <div className="editor-grid">
         <section
           className="form-card"
-          aria-label={task ? "Editar tarefa" : "Nova tarefa"}
+          aria-label={task ? "Edit task" : "New task"}
         >
           <div className="form-card-heading">
             <span className="section-icon">
               <Save size={19} />
             </span>
             <div>
-              <h2>{task ? "Detalhes da tarefa" : "Nova tarefa"}</h2>
-              <p>Título, descrição e agendamento.</p>
+              <h2>{task ? "Task details" : "New task"}</h2>
+              <p>Title, description and schedule.</p>
             </div>
           </div>
           <TaskForm
@@ -81,12 +81,12 @@ export function TaskEditor({
         </section>
         <aside className="editor-tip">
           <Leaf size={22} />
-          <h2>Data e horário</h2>
+          <h2>Date and time</h2>
           <p>
-            Use a data para entrevistas, reuniões ou entregas. O horário é
-            opcional; sem ele, a tarefa aparece como “Dia todo”.
+            Choose a date for interviews, meetings or deadlines. Time is
+            optional; tasks without a time appear as “All day”.
           </p>
-          <span>Os campos de data e horário são opcionais.</span>
+          <span>Date and time are optional.</span>
         </aside>
       </div>
     </main>

@@ -48,10 +48,10 @@ export function TaskForm({
   return (
     <form onSubmit={submit} noValidate>
       <p className="form-intro">
-        Título obrigatório. Descrição, data e horário opcionais.
+        A title is required. Description, date and time are optional.
       </p>
       <label htmlFor="title">
-        Título <span className="muted">(obrigatório)</span>
+        Title <span className="muted">(required)</span>
       </label>
       <input
         id="title"
@@ -62,7 +62,7 @@ export function TaskForm({
         aria-required="true"
         aria-invalid={!!errors.titulo}
         aria-describedby={errors.titulo ? "title-error" : undefined}
-        placeholder="Ex.: revisar a apresentação do projeto"
+        placeholder="E.g. review the project presentation"
         disabled={pending}
       />
       {errors.titulo && (
@@ -71,7 +71,7 @@ export function TaskForm({
         </p>
       )}
       <label htmlFor="description">
-        Descrição <span className="muted">(opcional)</span>
+        Description <span className="muted">(optional)</span>
       </label>
       <textarea
         id="description"
@@ -79,7 +79,7 @@ export function TaskForm({
         onChange={(e) => setDescricao(e.target.value)}
         maxLength={2000}
         rows={5}
-        placeholder="Detalhes da tarefa"
+        placeholder="Task details"
         disabled={pending}
         aria-invalid={!!errors.descricao}
         aria-describedby={errors.descricao ? "description-error" : undefined}
@@ -92,7 +92,7 @@ export function TaskForm({
       <div className="schedule-fields">
         <div>
           <label htmlFor="scheduled-date">
-            Data da tarefa <span className="muted">(opcional)</span>
+            Task date <span className="muted">(optional)</span>
           </label>
           <input
             id="scheduled-date"
@@ -118,7 +118,7 @@ export function TaskForm({
         </div>
         <div>
           <label htmlFor="scheduled-time">
-            Horário <span className="muted">(opcional)</span>
+            Time <span className="muted">(optional)</span>
           </label>
           <input
             id="scheduled-time"
@@ -137,7 +137,8 @@ export function TaskForm({
         </div>
       </div>
       <p className="field-hint" id="schedule-hint">
-        Com data, a tarefa aparece na agenda. Sem horário, fica como dia todo.
+        Dated tasks appear on the calendar. Leave time blank for an all-day
+        task.
       </p>
       {dataAgendada && (
         <button
@@ -149,7 +150,7 @@ export function TaskForm({
             setHorario("");
           }}
         >
-          Remover data e horário
+          Remove date and time
         </button>
       )}
       {error && (
@@ -164,10 +165,10 @@ export function TaskForm({
           disabled={pending}
           onClick={onCancel}
         >
-          Cancelar
+          Cancel
         </button>
         <button className="primary" disabled={pending} type="submit">
-          {pending ? "Salvando…" : "Salvar tarefa"}
+          {pending ? "Saving…" : "Save task"}
         </button>
       </div>
     </form>

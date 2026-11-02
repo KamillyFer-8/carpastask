@@ -32,19 +32,19 @@ export function TaskAgenda({
           <span className="section-number" aria-hidden="true">
             02
           </span>
-          <h2 id="agenda-heading">Calendário</h2>
+          <h2 id="agenda-heading">Calendar</h2>
           <p className="section-description">
-            {formatDay(inicio)} a{" "}
+            {formatDay(inicio)} –{" "}
             {formatDay(fim, { day: "numeric", month: "long", year: "numeric" })}
           </p>
         </div>
         <div className="agenda-controls">
           <label className="date-jump">
             <CalendarDays size={16} />
-            <span className="sr-only">Ir para uma data</span>
+            <span className="sr-only">Jump to a date</span>
             <input
               type="date"
-              aria-label="Ir para uma data"
+              aria-label="Jump to a date"
               min="1900-01-08"
               max="9998-12-24"
               value={inicio}
@@ -58,7 +58,7 @@ export function TaskAgenda({
             <button
               type="button"
               className="icon-button"
-              aria-label="Semana anterior"
+              aria-label="Previous week"
               disabled={inicio <= "1900-01-08"}
               onClick={() => setInicio(addDays(inicio, -7))}
             >
@@ -69,12 +69,12 @@ export function TaskAgenda({
               className="today-button"
               onClick={() => setInicio(initialWeek)}
             >
-              Hoje
+              Today
             </button>
             <button
               type="button"
               className="icon-button"
-              aria-label="Próxima semana"
+              aria-label="Next week"
               disabled={inicio >= "9998-12-18"}
               onClick={() => setInicio(addDays(inicio, 7))}
             >
@@ -85,14 +85,14 @@ export function TaskAgenda({
       </div>
       <div className="agenda-announcement" role="status" aria-live="polite">
         {agenda.isFetching
-          ? "Carregando a agenda…"
-          : `${agenda.data?.length ?? 0} tarefas nesta semana.`}
+          ? "Loading calendar…"
+          : `${agenda.data?.length ?? 0} tasks this week.`}
       </div>
       {agenda.isError ? (
         <div className="error-banner" role="alert">
-          Não foi possível carregar a agenda.{" "}
+          Could not load the calendar.{" "}
           <button className="text-button" onClick={() => void agenda.refetch()}>
-            Tentar novamente
+            Try again
           </button>
         </div>
       ) : (
@@ -122,7 +122,7 @@ export function TaskAgenda({
                     >
                       {formatDay(day, { day: "2-digit" })}
                     </time>
-                    {isToday && <span className="today-label">hoje</span>}
+                    {isToday && <span className="today-label">today</span>}
                   </div>
                   <div className="day-tasks">
                     {tasks.map((task) => (
@@ -131,24 +131,24 @@ export function TaskAgenda({
                         href={`/tarefas/${task.id}/editar`}
                         className="agenda-task"
                       >
-                        <span>{task.horario || "Dia todo"}</span>
+                        <span>{task.horario || "All day"}</span>
                         <strong>{task.titulo}</strong>
                         {task.descricao && <p>{task.descricao}</p>}
                       </Link>
                     ))}
                     {!tasks.length && (
                       <span className="day-empty">
-                        {agenda.isPending ? "Carregando…" : "—"}
+                        {agenda.isPending ? "Loading…" : "—"}
                       </span>
                     )}
                   </div>
                   <Link
                     href={`/tarefas/nova?data=${day}`}
                     className="add-to-day"
-                    aria-label={`Adicionar tarefa em ${formatDay(day, { day: "numeric", month: "long" })}`}
+                    aria-label={`Add task on ${formatDay(day, { day: "numeric", month: "long" })}`}
                   >
                     <Plus size={15} />
-                    <span>Adicionar</span>
+                    <span>Add</span>
                   </Link>
                 </section>
               );
@@ -156,7 +156,7 @@ export function TaskAgenda({
           </div>
           {!agenda.isFetching && !agenda.data?.length && (
             <p className="agenda-empty-hint">
-              Nenhuma tarefa nesta semana. Use + para adicionar.
+              No tasks this week. Use + to add one.
             </p>
           )}
         </>

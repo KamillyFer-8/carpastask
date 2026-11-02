@@ -4,19 +4,18 @@ import { AppHeader } from "@/components/app-header";
 import "@fontsource-variable/nunito/wght.css";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "CarpasTask — Tarefas e calendário",
-  description:
-    "Crie tarefas, marque datas e acompanhe os próximos compromissos.",
+  title: "CarpasTask — Tasks and calendar",
+  description: "Create tasks, schedule dates and review upcoming commitments.",
 };
 export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="en-US">
       <body>
         <Providers>
           <a className="skip-link" href="#conteudo">
-            Pular para o conteúdo
+            Skip to content
           </a>
           <AppHeader />
           {children}

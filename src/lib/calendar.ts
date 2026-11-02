@@ -20,7 +20,7 @@ export function formatDay(
   date: string,
   options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" },
 ) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     ...options,
     timeZone: "UTC",
   }).format(new Date(`${date}T12:00:00Z`));

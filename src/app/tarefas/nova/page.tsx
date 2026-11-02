@@ -1,6 +1,6 @@
 import { TaskEditor } from "@/components/task-editor";
 import { calendarDate } from "@/lib/task";
-export const metadata = { title: "Nova tarefa — CarpasTask" };
+export const metadata = { title: "New task — CarpasTask" };
 export default async function NewTaskPage({
   searchParams,
 }: {

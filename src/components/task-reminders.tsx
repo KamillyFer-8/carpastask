@@ -24,17 +24,17 @@ export function TaskReminderPanel({
         <span className="section-number" aria-hidden="true">
           03
         </span>
-        <h2 id="reminders-heading">Lembretes</h2>
+        <h2 id="reminders-heading">Reminders</h2>
         <Bell size={17} />
       </div>
       <p className="reminder-explanation">
-        Tarefas com data marcada. Consulte aqui ao abrir o sistema.
+        Scheduled tasks to review when you open the app.
       </p>
       {query.isError ? (
         <p className="field-error" role="alert">
-          Não foi possível carregar os lembretes.{" "}
+          Could not load reminders.{" "}
           <button className="text-button" onClick={() => void query.refetch()}>
-            Tentar novamente
+            Try again
           </button>
         </p>
       ) : (
@@ -46,7 +46,7 @@ export function TaskReminderPanel({
                 key={key}
                 className={`reminder-group ${key}`}
                 aria-label={
-                  key === "atrasadas" ? "Tarefas atrasadas" : "Próximas tarefas"
+                  key === "atrasadas" ? "Overdue tasks" : "Upcoming tasks"
                 }
               >
                 <div className="reminder-group-title">
@@ -54,10 +54,10 @@ export function TaskReminderPanel({
                     {key === "atrasadas" ? (
                       <>
                         <CircleAlert size={14} />
-                        Atrasadas
+                        Overdue
                       </>
                     ) : (
-                      "Hoje e próximos dias"
+                      "Next 7 days"
                     )}
                   </h3>
                   <span className="count">{group.total}</span>
@@ -69,9 +69,7 @@ export function TaskReminderPanel({
                         <Link href={`/tarefas/${task.id}/editar`}>
                           <span className="reminder-date">
                             {formatDay(task.dataAgendada!)}
-                            {task.horario
-                              ? ` / ${task.horario}`
-                              : " / Dia todo"}
+                            {task.horario ? ` / ${task.horario}` : " / All day"}
                           </span>
                           <strong>{task.titulo}</strong>
                           <ArrowUpRight size={14} aria-hidden="true" />
@@ -82,13 +80,13 @@ export function TaskReminderPanel({
                 ) : (
                   <p className="reminder-empty">
                     {key === "atrasadas"
-                      ? "Nenhuma tarefa atrasada."
-                      : "Nenhuma tarefa para os próximos 7 dias."}
+                      ? "No overdue tasks."
+                      : "No tasks scheduled for the next 7 days."}
                   </p>
                 )}
                 {group.total > group.items.length && (
                   <a className="reminder-more" href="#tarefas">
-                    Ver todas as tarefas ({group.total})
+                    View all tasks ({group.total})
                   </a>
                 )}
               </section>
@@ -97,8 +95,8 @@ export function TaskReminderPanel({
         </>
       )}
       <p className="reminder-footnote">
-        Tarefas com data anterior a hoje aparecem como atrasadas. Este painel
-        não envia notificações.
+        Tasks dated before today appear as overdue. This panel does not send
+        notifications.
       </p>
       <span className="paper-corner" aria-hidden="true" />
     </aside>

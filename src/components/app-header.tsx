@@ -4,7 +4,7 @@ export function AppHeader() {
   return (
     <header className="app-header">
       <div className="header-inner">
-        <Link href="/" className="brand" aria-label="CarpasTask, início">
+        <Link href="/" className="brand" aria-label="CarpasTask home">
           <span className="brand-icon">
             <AppLogo />
           </span>
@@ -15,7 +15,7 @@ export function AppHeader() {
         </Link>
         <span className="header-note">
           <span className="tiny-dot" />
-          Tarefas / calendário
+          Tasks / calendar
         </span>
       </div>
     </header>

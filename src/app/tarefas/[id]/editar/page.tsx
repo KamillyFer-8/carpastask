@@ -4,7 +4,7 @@ import { taskId } from "@/lib/task";
 import { TaskEditor } from "@/components/task-editor";
 import { TRPCError } from "@trpc/server";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Editar tarefa — CarpasTask" };
+export const metadata = { title: "Edit task — CarpasTask" };
 export default async function EditTaskPage({
   params,
 }: {

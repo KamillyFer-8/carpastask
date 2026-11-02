@@ -51,7 +51,7 @@ export function TaskWorkspace({
   const remove = trpc.task.delete.useMutation({
     onSuccess: async () => {
       setDeleting(null);
-      setFeedback("Tarefa excluída.");
+      setFeedback("Task deleted.");
       await Promise.all([
         utils.task.list.invalidate(),
         utils.task.agenda.invalidate(),
@@ -86,37 +86,37 @@ export function TaskWorkspace({
   const notice =
     feedback ||
     (success === "criada"
-      ? "Tarefa criada com sucesso."
+      ? "Task created successfully."
       : success === "atualizada"
-        ? "Tarefa atualizada com sucesso."
+        ? "Task updated successfully."
         : "");
   return (
     <main className="shell" id="conteudo">
       <section className="workspace-intro">
         <div className="intro-copy">
           <h1>
-            Tarefas
+            Tasks
             <br />
-            <span>&amp; agenda.</span>
+            <span>&amp; calendar.</span>
           </h1>
           <div className="intro-actions">
             <Link className="primary" href="/tarefas/nova">
               <Plus size={18} />
-              Nova tarefa
+              New task
             </Link>
             <a className="intro-calendar-link" href="#agenda">
-              Ver calendário
+              View calendar
             </a>
           </div>
         </div>
         <div className="workspace-stamp">
-          <span>HOJE</span>
+          <span>TODAY</span>
           <time dateTime={today}>
             {formatDay(today, {
               day: "2-digit",
-              month: "2-digit",
+              month: "short",
               year: "numeric",
-            }).replaceAll("/", ".")}
+            })}
           </time>
           <svg viewBox="0 0 190 40" aria-hidden="true">
             {Array.from({ length: 38 }, (_, index) => (
@@ -132,18 +132,18 @@ export function TaskWorkspace({
           <span>{formatDay(today, { weekday: "long" })}</span>
         </div>
       </section>
-      <nav className="workspace-nav" aria-label="Seções do planejamento">
+      <nav className="workspace-nav" aria-label="Workspace sections">
         <a href="#tarefas">
           <Feather size={16} />
-          Todas as tarefas
+          All tasks
         </a>
         <a href="#agenda">
           <CalendarDays size={16} />
-          Calendário
+          Calendar
         </a>
         <a href="#lembretes">
           <Bell size={16} />
-          Lembretes
+          Reminders
         </a>
       </nav>
       <section
@@ -157,10 +157,10 @@ export function TaskWorkspace({
               01
             </span>
             <h2 id="tasks-heading">
-              Todas as tarefas{" "}
+              All tasks{" "}
               <span
                 className="count"
-                aria-label={`${tasks.length} tarefas carregadas`}
+                aria-label={`${tasks.length} tasks loaded`}
               >
                 {tasks.length}
                 {list.hasNextPage ? "+" : ""}
@@ -169,7 +169,7 @@ export function TaskWorkspace({
           </div>
           <span className="sort-label">
             <ArrowDown size={15} />
-            Mais recentes
+            Newest first
           </span>
         </div>
         <div role="status" aria-live="polite">
@@ -182,9 +182,9 @@ export function TaskWorkspace({
         </div>
         {list.isError && (
           <div className="error-banner" role="alert">
-            Não foi possível carregar as tarefas.{" "}
+            Could not load tasks.{" "}
             <button className="text-button" onClick={() => void list.refetch()}>
-              Tentar novamente
+              Try again
             </button>
           </div>
         )}
@@ -193,11 +193,11 @@ export function TaskWorkspace({
             <div className="empty-icon">
               <Feather size={28} strokeWidth={1.5} />
             </div>
-            <h3>Nenhuma tarefa.</h3>
-            <p>Adicione um título. A data e a descrição são opcionais.</p>
+            <h3>No tasks yet.</h3>
+            <p>Add a title. The date and description are optional.</p>
             <Link className="secondary" href="/tarefas/nova">
               <Plus size={17} />
-              Criar tarefa
+              Create task
             </Link>
           </section>
         ) : (
@@ -213,18 +213,18 @@ export function TaskWorkspace({
                       {task.dataAgendada ? (
                         <time dateTime={task.dataAgendada}>
                           {formatDay(task.dataAgendada)}
-                          {task.horario ? ` · ${task.horario}` : " · Dia todo"}
+                          {task.horario ? ` · ${task.horario}` : " · All day"}
                         </time>
                       ) : (
-                        <span>Sem data definida</span>
+                        <span>No date set</span>
                       )}
                     </div>
                     <div className="task-content">
                       <h3>{task.titulo}</h3>
                       {task.descricao && <p>{task.descricao}</p>}
                       <time dateTime={task.dataCriacao}>
-                        Criada em{" "}
-                        {new Intl.DateTimeFormat("pt-BR", {
+                        Created on{" "}
+                        {new Intl.DateTimeFormat("en-US", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
@@ -236,15 +236,15 @@ export function TaskWorkspace({
                       <Link
                         className="icon-button"
                         href={`/tarefas/${task.id}/editar`}
-                        aria-label={`Editar ${task.titulo}`}
-                        title="Editar tarefa"
+                        aria-label={`Edit ${task.titulo}`}
+                        title="Edit task"
                       >
                         <Pencil size={17} />
                       </Link>
                       <button
                         className="icon-button delete-button"
-                        aria-label={`Excluir ${task.titulo}`}
-                        title="Excluir tarefa"
+                        aria-label={`Delete ${task.titulo}`}
+                        title="Delete task"
                         onClick={() => {
                           remove.reset();
                           setDeleting(task);
@@ -264,13 +264,13 @@ export function TaskWorkspace({
                   disabled={list.isFetching}
                   onClick={() => void list.fetchNextPage()}
                 >
-                  {list.isFetchingNextPage ? "Carregando…" : "Carregar mais"}
+                  {list.isFetchingNextPage ? "Loading…" : "Load more"}
                 </button>
               ) : (
-                <p>Todas as tarefas foram carregadas.</p>
+                <p>All tasks have been loaded.</p>
               )}
               <span role="status">
-                {list.isFetchingNextPage ? "Carregando mais tarefas…" : ""}
+                {list.isFetchingNextPage ? "Loading more tasks…" : ""}
               </span>
             </div>
           </>
@@ -285,11 +285,11 @@ export function TaskWorkspace({
           <AppLogo />
           CarpasTask
         </span>
-        <a href="#conteudo">Voltar ao início ↑</a>
+        <a href="#conteudo">Back to top ↑</a>
       </footer>
       {deleting && (
         <Dialog
-          title="Excluir esta tarefa?"
+          title="Delete this task?"
           busy={remove.isPending}
           onClose={() => setDeleting(null)}
         >
@@ -297,9 +297,9 @@ export function TaskWorkspace({
             <Trash2 size={24} />
           </div>
           <p className="delete-copy">
-            “{deleting.titulo}” será excluída.
+            “{deleting.titulo}” will be deleted.
             <br />
-            Esta ação não pode ser desfeita.
+            This action cannot be undone.
           </p>
           {remove.error && (
             <p className="field-error" role="alert">
@@ -312,7 +312,7 @@ export function TaskWorkspace({
               disabled={remove.isPending}
               onClick={() => setDeleting(null)}
             >
-              Cancelar
+              Cancel
             </button>
             <button
               className="danger"
@@ -321,7 +321,7 @@ export function TaskWorkspace({
                 if (!remove.isPending) remove.mutate({ id: deleting.id });
               }}
             >
-              {remove.isPending ? "Excluindo…" : "Excluir tarefa"}
+              {remove.isPending ? "Deleting…" : "Delete task"}
             </button>
           </div>
         </Dialog>

@@ -12,23 +12,23 @@ describe("task router and isolated repository", () => {
   afterEach(() => vi.useRealTimers());
   it("builds reminders from the complete store, caps previews and updates after date changes", async () => {
     const overdue = await caller.task.create({
-      titulo: "Revisar proposta",
+      titulo: "Review proposal",
       dataAgendada: "2026-11-01",
     });
     const upcoming = await caller.task.create({
-      titulo: "Enviar documento",
+      titulo: "Send document",
       dataAgendada: "2026-11-03",
     });
     for (let index = 0; index < 24; index++)
       await caller.task.create({
-        titulo: `Próxima ${index}`,
+        titulo: `Upcoming ${index}`,
         dataAgendada: "2026-11-04",
       });
     await caller.task.create({
-      titulo: "Fora do período",
+      titulo: "Outside the window",
       dataAgendada: "2026-11-09",
     });
-    await caller.task.create({ titulo: "Sem data" });
+    await caller.task.create({ titulo: "Unscheduled" });
     const reminders = await caller.task.reminders({ hoje: "2026-11-02" });
     expect(reminders.atrasadas).toMatchObject({ total: 1, items: [overdue] });
     expect(reminders.proximas.total).toBe(25);
@@ -36,7 +36,7 @@ describe("task router and isolated repository", () => {
     expect(reminders.proximas.items[0].id).toBe(upcoming.id);
     reminders.proximas.items[0].titulo = "External";
     expect((await caller.task.get({ id: upcoming.id })).titulo).toBe(
-      "Enviar documento",
+      "Send document",
     );
     await caller.task.update({ id: upcoming.id, titulo: upcoming.titulo });
     await caller.task.delete({ id: overdue.id });
@@ -49,7 +49,7 @@ describe("task router and isolated repository", () => {
   });
   it("creates, reschedules and clears a date without altering creation metadata", async () => {
     const task = await caller.task.create({
-      titulo: "Entrevista",
+      titulo: "Interview",
       dataAgendada: "2026-11-05",
       horario: "14:30",
     });
@@ -112,15 +112,15 @@ describe("task router and isolated repository", () => {
   it("loads the complete weekly agenda independently of list pagination", async () => {
     for (let index = 0; index < 25; index++)
       await caller.task.create({
-        titulo: `Tarefa ${index}`,
+        titulo: `Task ${index}`,
         dataAgendada: "2026-11-05",
         horario: index % 2 ? "14:00" : undefined,
       });
     await caller.task.create({
-      titulo: "Fora da semana",
+      titulo: "Outside the week",
       dataAgendada: "2026-11-12",
     });
-    await caller.task.create({ titulo: "Sem data" });
+    await caller.task.create({ titulo: "Unscheduled" });
     const result = await caller.task.agenda({
       inicio: "2026-11-02",
       fim: "2026-11-08",
@@ -134,7 +134,7 @@ describe("task router and isolated repository", () => {
     );
   });
   it("reads a task for the dedicated edit page and rejects missing IDs", async () => {
-    const task = await caller.task.create({ titulo: "Editar pela URL" });
+    const task = await caller.task.create({ titulo: "Edit by URL" });
     expect(await caller.task.get({ id: task.id })).toEqual(task);
     await expect(caller.task.get({ id: randomUUID() })).rejects.toMatchObject({
       code: "NOT_FOUND",
@@ -188,7 +188,7 @@ describe("task router and isolated repository", () => {
       caller.task.update({ id: randomUUID(), titulo: "Missing" }),
     ).rejects.toMatchObject({
       code: "NOT_FOUND",
-      message: "Tarefa não encontrada.",
+      message: "Task not found.",
     });
     await expect(caller.task.delete({ id: task.id })).rejects.toMatchObject({
       code: "NOT_FOUND",
