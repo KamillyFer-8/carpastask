@@ -75,4 +75,4 @@ Native date/time field formatting may follow the browser or operating-system loc
 - Authentication, registration, recurring events, drag-and-drop scheduling and external integrations remain outside scope.
 - Fourteen moderate development-tool findings remain in the Next 15 ESLint/minimatch dependency chain. A blanket incompatible major override was not applied. The production dependency audit is clean; no high/critical findings remain in the audited tree.
 - The production test/capture servers emit a harmless terminal warning when the host sets both `NO_COLOR` and `FORCE_COLOR`; no application browser/server failures remained in the final successful runs.
-- The theoretical answers and their English PDF submission are separate from this repository. The public GitHub link is also a remaining delivery step. Nothing is deployed or published automatically.
+- The theoretical answers and their English PDF submission are separate from this repository. Source code is published at [KamillyFer-8/carpastask](https://github.com/KamillyFer-8/carpastask) on the `main` branch. No hosted application deployment or Google Forms submission is included.
